@@ -1,10 +1,13 @@
 /* =========================================================================
    drill-engine.js — pure game logic shared by every speed-drill applet.
    No DOM. A drill is a set of *directions*; each direction has *cards*
-   ({ key, shown, answer, accept?, answerLabel? }). A Round deals cards from a
-   reshuffling deck per direction, judges typed input prefix-wise so a right
-   answer can advance the instant it is complete, and keeps per-card stats
-   for the weak-spot report. Exercised by tests/drill-engine.test.mjs.
+   ({ key, shown, answer, accept?, answerLabel? }), either as a fixed list
+   (`cards`) or generated (`size` + `card(index, context)`). A direction may
+   also declare a *run*: a context (e.g. a Caesar key) dealt from its own deck
+   and held for `length` consecutive prompts. A Round deals from reshuffling
+   decks, judges typed input prefix-wise so a right answer can advance the
+   instant it is complete, and keeps per-card stats for the weak-spot report
+   (grouped by `statKey` when a card sets one). Tests: tests/drill-engine.test.mjs.
    ========================================================================= */
 
 export const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -86,12 +89,18 @@ export class Round {
     if (!Array.isArray(directions) || directions.length === 0) throw new Error("at least one direction must be on");
     for (const d of directions) {
       if (!d || !d.id) throw new Error("direction needs an id");
-      if (!Array.isArray(d.cards) || d.cards.length === 0) throw new Error(`direction ${d.id} has no cards`);
+      const generated = typeof d.card === "function" && Number.isInteger(d.size) && d.size > 0;
+      if (!generated && (!Array.isArray(d.cards) || d.cards.length === 0)) throw new Error(`direction ${d.id} has no cards`);
+      if (d.run && (!Number.isInteger(d.run.length) || d.run.length < 1 || !Number.isInteger(d.run.size) || d.run.size < 1 || typeof d.run.context !== "function")) {
+        throw new Error(`direction ${d.id} has a malformed run`);
+      }
     }
     this.directions = directions;
     this.rng = rng;
     this.revealAfter = revealAfter;
-    this.decks = directions.map((d) => new Deck({ size: d.cards.length, rng }));
+    this.decks = directions.map((d) => new Deck({ size: d.cards ? d.cards.length : d.size, rng }));
+    this.runDecks = directions.map((d) => (d.run ? new Deck({ size: d.run.size, rng }) : null));
+    this.run = null;       // { di, context, length, position } while a run is in progress
 
     this.score = 0;        // correct answers that were not revealed
     this.answered = 0;     // prompts completed, revealed or not
@@ -112,10 +121,21 @@ export class Round {
   get isRevealed() { return this.currentRevealed; }
 
   next(now = 0) {
-    const di = this.directions.length === 1 ? 0 : Math.floor(this.rng() * this.directions.length);
+    let di;
+    if (this.run && this.run.position < this.run.length) {
+      di = this.run.di;                                   // stay inside the current run
+    } else {
+      di = this.directions.length === 1 ? 0 : Math.floor(this.rng() * this.directions.length);
+      const d = this.directions[di];
+      this.run = d.run
+        ? { di, context: d.run.context(this.runDecks[di].draw()), length: d.run.length, position: 0 }
+        : null;
+    }
     const dir = this.directions[di];
-    const card = dir.cards[this.decks[di].draw()];
-    this.current = { dir, card };
+    const idx = this.decks[di].draw();
+    const card = dir.cards ? dir.cards[idx] : dir.card(idx, this.run ? this.run.context : undefined);
+    if (this.run) this.run.position++;
+    this.current = { dir, card, run: this.run ? { ...this.run } : null };
     this.currentMisses = 0;
     this.currentRevealed = false;
     this.shownAt = now;
@@ -123,10 +143,15 @@ export class Round {
   }
 
   _rec({ dir, card }) {
-    const key = `${dir.id}:${card.key}`;
+    const key = `${dir.id}:${card.statKey ?? card.key}`;
     let r = this.perKey.get(key);
     if (!r) {
-      r = { key, dirId: dir.id, cardKey: card.key, shown: card.shown, answerLabel: answerLabelOf(dir, card), attempts: 0, misses: 0, revealed: 0, ms: 0 };
+      r = {
+        key, dirId: dir.id, cardKey: card.statKey ?? card.key,
+        shown: card.statShown ?? card.shown,
+        answerLabel: card.statAnswer !== undefined ? card.statAnswer : answerLabelOf(dir, card),
+        attempts: 0, misses: 0, revealed: 0, ms: 0,
+      };
       this.perKey.set(key, r);
     }
     return r;

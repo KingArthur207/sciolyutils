@@ -4,21 +4,31 @@ import { ALPHABET, judge, Round } from "../assets/js/drill-engine.js";
 import { spec as alpha, alphaDirections } from "../alpha2num/spec.js";
 import { spec as bacon, baconCode, baconTable, baconDirections, ALPHA24 } from "../baconian/spec.js";
 import { spec as morse, MORSE, pretty, normalizeMorse, spell, morseDirections } from "../morse/spec.js";
+import { spec as caesar, shiftLetter, caesarDirections, clampN } from "../caesar/spec.js";
+
+/** every card a direction can produce (fixed list, or generated for every context) */
+const allCards = (d) => {
+  if (d.cards) return d.cards;
+  const contexts = d.run ? Array.from({ length: d.run.size }, (_, j) => d.run.context(j)) : [undefined];
+  return contexts.flatMap((ctx) => Array.from({ length: d.size }, (_, i) => d.card(i, ctx)));
+};
 
 /* every spec must produce two directions with well-formed cards and round-trip through the engine */
 for (const [name, s, settings] of [
   ["alpha2num", alpha, { base: 0 }], ["alpha2num base 1", alpha, { base: 1 }],
   ["baconian 24", bacon, { alpha: 24 }], ["baconian 26", bacon, { alpha: 26 }],
   ["morse", morse, { digits: false }], ["morse + digits", morse, { digits: true }],
+  ["caesar", caesar, { n: 5, keyAs: "number" }], ["caesar n=1 letter keys", caesar, { n: 1, keyAs: "letter" }],
 ]) {
   test(`${name}: directions are well-formed and playable`, () => {
     const dirs = s.directions(settings);
     assert.equal(dirs.length, 2);
     for (const d of dirs) {
       assert.ok(d.id && d.label && typeof d.normalize === "function");
-      const keys = new Set(d.cards.map((c) => c.key));
-      assert.equal(keys.size, d.cards.length, `${d.id} keys unique`);
-      for (const c of d.cards) {
+      const cards = allCards(d);
+      const keys = new Set(cards.map((c) => c.key));
+      assert.equal(keys.size, cards.length, `${d.id} keys unique`);
+      for (const c of cards) {
         assert.ok(c.shown.length > 0 && c.answer.length > 0);
         // the canonical answer survives the direction's own normalizer
         assert.equal(d.normalize(c.answer), c.answer, `${d.id} ${c.key} normalize(answer)`);
@@ -117,4 +127,52 @@ test("morse: directions, digits toggle, and the tap pad", () => {
   assert.equal(withDigits[1].normalize("7"), "7");
   assert.equal(morse.extrasKey({ digits: true }), "digits");
   assert.equal(morse.strip({ digits: true }).length, 36);
+});
+
+test("caesar: shifting, wrap-around, and both directions agree with the key", () => {
+  assert.equal(shiftLetter("Q", 7), "X");
+  assert.equal(shiftLetter("X", -7), "Q");
+  assert.equal(shiftLetter("Z", 1), "A");
+  assert.equal(shiftLetter("A", -1), "Z");
+  assert.equal(shiftLetter("a", 26), "A");
+  assert.throws(() => shiftLetter("1", 3));
+  const [enc, dec] = caesarDirections({ n: 5 });
+  assert.equal(enc.run.length, 5); assert.equal(enc.run.size, 25);
+  assert.deepEqual(enc.run.context(0), { key: 1 }); assert.deepEqual(enc.run.context(24), { key: 25 });
+  for (let k = 1; k <= 25; k++) {
+    for (let i = 0; i < 26; i++) {
+      const e = enc.card(i, { key: k }), d = dec.card(i, { key: k });
+      assert.equal(e.shown, ALPHABET[i]);
+      assert.equal(e.answer, ALPHABET[(i + k) % 26]);
+      assert.equal(d.answer, ALPHABET[(i - k + 26) % 26]);
+      assert.equal(shiftLetter(e.answer, -k), e.shown);            // decrypting the cipher gives the plain back
+      assert.equal(e.statKey, `+${k}`); assert.equal(d.statKey, `-${k}`);
+      assert.equal(e.statShown, `shift +${k}`); assert.equal(d.statShown, `shift −${k}`);
+      assert.equal(e.statAnswer, "");
+    }
+  }
+  assert.equal(enc.run.label({ key: 7 }), "7");
+  assert.equal(enc.run.hint({ key: 7 }), "A → H");
+  const [encL] = caesarDirections({ n: 3, keyAs: "letter" });
+  assert.equal(encL.run.label({ key: 7 }), "H");
+  assert.equal(encL.run.hint({ key: 7 }), "A → H · shift 7");
+  assert.equal(encL.run.length, 3);
+  assert.equal(enc.sr(enc.card(16, { key: 7 })), "Key 7. Encrypt the letter Q.");
+  assert.equal(enc.normalize("x1"), "X");
+});
+
+test("caesar: N is clamped and the extras round-trip", () => {
+  assert.equal(clampN(0), 1); assert.equal(clampN(500), 99); assert.equal(clampN("abc"), 5); assert.equal(clampN(7.4), 7);
+  assert.equal(caesarDirections({ n: 1000 })[0].run.length, 99);
+  const s = { n: 5, keyAs: "number" };
+  caesar.sanitizeExtras(s); assert.deepEqual(s, { n: 5, keyAs: "number" });
+  const bad = { n: -3, keyAs: "weird" };
+  caesar.sanitizeExtras(bad); assert.deepEqual(bad, { n: 1, keyAs: "number" });
+  const q = new URLSearchParams("n=10&key=letter"); const u = { n: 5, keyAs: "number" };
+  caesar.urlExtras(q, u); assert.deepEqual(u, { n: 10, keyAs: "letter" });
+  assert.equal(caesar.extrasKey({ n: 5, keyAs: "number" }), "n5:number");
+  assert.equal(caesar.extrasLabel({ n: 5, keyAs: "letter" }), "5 per key, key as letter");
+  assert.equal(caesar.urlQuery({ n: 3, keyAs: "number" }), "n=3&key=number");
+  assert.equal(caesar.strip({}).length, 26);
+  assert.deepEqual(caesar.strip({})[25], { top: "Z", bottom: "25" });
 });

@@ -53,7 +53,9 @@ glyph, badge, desc, tags`) and spec tests. Directions can mark long prompts/answ
 `shownWide`/`answerWide`, provide a `display` for pretty output (Morse dots), accept several
 answers per card (Baconian I/J), and offer a tap `pad` for symbols phones lack.
 
-Page structure: `page-head` (crumbs, mono title, one-paragraph lead, back link) →
+Quick-set chips are `<button class="chip" data-field="<form field>" data-value="…">`; the controller
+wires them to any field in the setup form. Page structure: `page-head` (crumbs, mono title,
+one-paragraph lead, back link) →
 `.trainer` card with three views: **setup** (form; Enter starts), **play** (HUD with time
 and score, prompt tile, small answer box, optional aids), **done** (big score, PB badge,
 stat grid, weak-spot chips, Play again / Change settings / Copy summary) → three short
@@ -98,6 +100,17 @@ by default, **digits 0–9** optional. Canonical answers use `.`/`-`; the page d
 and accepts `.`, `,`, `•` for dots and `-`, `_`, `–`, `—` for dashes. A two-key **tap pad**
 (plus backspace) sits under the answer box for phones. Screen readers hear "dit"/"dah".
 
+## caesar (built)
+
+Same shell for the Caesar shift, with **key runs**: a key (1–25, dealt from its own deck so
+every key comes up before any repeats) is shown in a gold banner and held for **N
+consecutive letters** (default 5, like classic five-letter groups; 1–99 via chips or a
+field), then a new key is dealt. The direction (encrypt: plain + key; decrypt: cipher − key)
+stays fixed for a whole run. The key can be shown as a shift number (default) or as the
+letter A maps to. Weak spots group by signed shift ("shift +7", "shift −19"), not by letter.
+Engine support: directions may generate cards (`size` + `card(index, context)`) and declare
+`run { length, size, context(i), label, hint }`; cards may set `statKey/statShown/statAnswer`.
+
 ## Quality bar before shipping a change
 
 1. `npm test` passes.
@@ -108,7 +121,7 @@ and accepts `.`, `,`, `•` for dots and `-`, `_`, `–`, `—` for dashes. A tw
 
 ## Backlog ideas (not built)
 
-- **mod26**: add/subtract/multiply mod 26 (Affine, Hill, Vigenère shifts).
+- **mod26**: multiply mod 26 and the Affine decode step (the additive part is now `caesar`).
 - **affine-inverse**: recall the multiplicative inverses mod 26 (1, 3, 5, 7, 9, 11, 15, 17, 19, 21, 23, 25).
 - **polybius**: coordinate ↔ letter for a keyed 5×5 square.
 - **freq-rank**: order letters by English frequency (ETAOIN SHRDLU).

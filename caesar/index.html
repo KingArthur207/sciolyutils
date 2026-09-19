@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>morse · sciolyutils</title>
-  <meta name="description" content="Zetamac-style speed drill for Morse code as Science Olympiad's Fractionated Morse, Morbit and Pollux use it: letters to dots and dashes and back, against the clock.">
+  <title>caesar · sciolyutils</title>
+  <meta name="description" content="Zetamac-style speed drill for the Caesar shift: a key is dealt for a run of letters, you encrypt or decrypt each one against the clock. Choose how many letters share a key.">
   <meta name="theme-color" content="#3b53d9">
   <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,15 +13,15 @@
   <link rel="stylesheet" href="/assets/css/base.css">
   <link rel="stylesheet" href="/assets/css/trainer.css">
   <script type="module" src="/assets/js/site.js"></script>
-  <script type="module" src="/morse/app.js"></script>
+  <script type="module" src="/caesar/app.js"></script>
 </head>
 <body>
   <main id="main">
     <header class="page-head">
       <div class="wrap">
-        <p class="crumbs"><a href="/">Home</a> / morse</p>
-        <h1 class="mono">morse</h1>
-        <p class="lead">Letters to Morse and back, the way Fractionated Morse needs it. See <b>Q</b>, type <b>– – • –</b>. See <b>– – • –</b>, type <b>Q</b>. Type dots and dashes or tap them on the pad.</p>
+        <p class="crumbs"><a href="/">Home</a> / caesar</p>
+        <h1 class="mono">caesar</h1>
+        <p class="lead">Shift letters by a key, against the clock. A key is dealt and held for a run of letters, then a new one arrives. Key <b>7</b>, see <b>Q</b>, type <b>X</b>. Decrypting, key <b>7</b>, see <b>X</b>, type <b>Q</b>.</p>
         <a class="back" href="/">← All applets</a>
       </div>
     </header>
@@ -38,24 +38,39 @@
                 <label class="switch">
                   <input type="checkbox" id="opt-dirA" name="dirA" checked>
                   <span class="track" aria-hidden="true"><span class="thumb"></span></span>
-                  <span class="text"><b>Letter → Morse</b><small>See <span class="ex">Q</span>, type <span class="ex">––•–</span></small></span>
+                  <span class="text"><b>Encrypt · plain → cipher</b><small>Key <span class="ex">7</span>, see <span class="ex">Q</span>, type <span class="ex">X</span></small></span>
                 </label>
                 <label class="switch">
                   <input type="checkbox" id="opt-dirB" name="dirB" checked>
                   <span class="track" aria-hidden="true"><span class="thumb"></span></span>
-                  <span class="text"><b>Morse → letter</b><small>See <span class="ex">––•–</span>, type <span class="ex">Q</span></small></span>
+                  <span class="text"><b>Decrypt · cipher → plain</b><small>Key <span class="ex">7</span>, see <span class="ex">X</span>, type <span class="ex">Q</span></small></span>
                 </label>
-                <p class="opt-help" id="dir-help" aria-live="polite">Turn on one or both. With both on, prompts alternate at random.</p>
+                <p class="opt-help" id="dir-help" aria-live="polite">Turn on one or both. The direction stays fixed for a whole key run, then may switch.</p>
               </fieldset>
 
               <fieldset class="opt">
-                <legend>Symbols</legend>
-                <label class="switch">
-                  <input type="checkbox" id="opt-digits" name="digits">
-                  <span class="track" aria-hidden="true"><span class="thumb"></span></span>
-                  <span class="text"><b>Include digits 0–9</b><small>Off by default: Codebusters' Morse ciphers only use letters.</small></span>
-                </label>
-                <p class="opt-help">Fractionated Morse writes <span class="mono">x</span> between letters and <span class="mono">xx</span> between words; that part is the cipher, not the code, so it is not drilled here.</p>
+                <legend>Letters per key</legend>
+                <div class="duration-row">
+                  <button type="button" class="chip" data-field="n" data-value="1" aria-pressed="false">1</button>
+                  <button type="button" class="chip" data-field="n" data-value="3" aria-pressed="false">3</button>
+                  <button type="button" class="chip" data-field="n" data-value="5" aria-pressed="true">5</button>
+                  <button type="button" class="chip" data-field="n" data-value="10" aria-pressed="false">10</button>
+                  <label class="num-field">
+                    <span class="visually-hidden">Custom letters per key</span>
+                    <input type="number" id="opt-n" name="n" min="1" max="99" step="1" value="5" inputmode="numeric">
+                    <span aria-hidden="true">letters</span>
+                  </label>
+                </div>
+                <p class="opt-help">How many consecutive letters share one key before a new key is dealt. Five matches classic five-letter cipher groups; 1 means a fresh key every letter.</p>
+              </fieldset>
+
+              <fieldset class="opt">
+                <legend>Key shown as</legend>
+                <div class="pills">
+                  <label class="pill"><input type="radio" name="keyAs" value="number" checked><span>Shift number · 7</span></label>
+                  <label class="pill"><input type="radio" name="keyAs" value="letter"><span>Key letter · A → H</span></label>
+                </div>
+                <p class="opt-help">Keys run 1 to 25. The letter form names where A lands, the way Vigenère keys read.</p>
               </fieldset>
 
               <fieldset class="opt">
@@ -72,7 +87,6 @@
                     <span aria-hidden="true">seconds</span>
                   </label>
                 </div>
-                <p class="opt-help">Anything from 5 to 3600 seconds works.</p>
               </fieldset>
 
               <fieldset class="opt">
@@ -80,9 +94,9 @@
                 <label class="switch">
                   <input type="checkbox" id="opt-strip" name="strip">
                   <span class="track" aria-hidden="true"><span class="thumb"></span></span>
-                  <span class="text"><b>Show the Morse table</b><small>Training wheels: keep the whole table on screen during the round.</small></span>
+                  <span class="text"><b>Show the A–Z strip</b><small>Training wheels: letters with their numbers 0–25, for adding the shift.</small></span>
                 </label>
-                <p class="opt-help">Keys: <kbd>.</kbd> or <kbd>,</kbd> for a dot, <kbd>-</kbd> or <kbd>_</kbd> for a dash. After three misses on one prompt the answer is revealed; it does not score.</p>
+                <p class="opt-help">After three misses on one prompt the answer is revealed; it does not score.</p>
               </fieldset>
             </div>
 
@@ -102,13 +116,14 @@
             <div class="progress" id="progress" aria-hidden="true"><span id="progress-bar"></span></div>
 
             <div class="stage" id="stage">
-              <span class="stage-kicker" id="kicker">Letter → Morse</span>
+              <span class="stage-kicker" id="kicker">Encrypt · plain → cipher</span>
+              <div class="run-banner" id="context" hidden></div>
               <div class="tile" id="tile" aria-live="polite" aria-atomic="true">
                 <span id="tile-text" aria-hidden="true">Q</span>
                 <span class="visually-hidden" id="tile-sr"></span>
               </div>
               <div class="answer-wrap">
-                <input class="tile-input" id="answer" type="text" maxlength="5" aria-label="Your answer"
+                <input class="tile-input" id="answer" type="text" maxlength="1" aria-label="Your answer"
                        autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" enterkeyhint="done">
               </div>
               <div class="pad" id="pad" hidden></div>
@@ -116,7 +131,7 @@
               <p class="stage-hint">Right answers advance on their own. Wrong ones clear so you can retype.</p>
             </div>
 
-            <div class="ref-strip" id="strip" hidden aria-label="Morse table"></div>
+            <div class="ref-strip" id="strip" hidden aria-label="Letter and number reference"></div>
           </div>
 
           <!-- ================= DONE ================= -->
@@ -142,19 +157,19 @@
         <div class="notes">
           <div class="card">
             <h3>Why drill this?</h3>
-            <p>Fractionated Morse, Morbit and Pollux all start and end with Morse. The table is printed on the test, but every glance at it is a context switch. Fluent Morse lets you read the plaintext as the triplets fall out.</p>
+            <p>Every shift cipher on the test, Caesar, Vigenère, Porta and the Affine's additive step, comes down to moving a letter a fixed distance and wrapping at Z. Doing that without counting on your fingers is what makes brute-forcing 25 shifts feasible.</p>
           </div>
           <div class="card">
             <h3>How to get fast</h3>
             <ul>
-              <li>Learn by length: E T · I A N M · S U R W D K G O · then the fours.</li>
-              <li>Pairs that mirror: A <span class="mono">•–</span> / N <span class="mono">–•</span>, D <span class="mono">–••</span> / U <span class="mono">••–</span>, B <span class="mono">–•••</span> / V <span class="mono">•••–</span>.</li>
-              <li>Do Morse → letter first; that is the direction decoding needs.</li>
+              <li>Big shifts go the other way: +19 is −7, +22 is −4.</li>
+              <li>Jump by landmarks: +13 flips A↔N, +5 lands on the next vowel-ish row.</li>
+              <li>Weak spots are reported per key, so drill the shifts that slow you down.</li>
             </ul>
           </div>
           <div class="card">
             <h3>For coaches</h3>
-            <p>Link a preset round: <code>/morse/?dir=m2l&amp;t=90</code> (<code>dir</code> is <code>l2m</code>, <code>m2l</code> or <code>both</code>; add <code>digits=1</code> to include 0–9). Students can paste "Copy summary" into your chat.</p>
+            <p>Link a preset round: <code>/caesar/?dir=dec&amp;n=5&amp;t=60</code> (<code>dir</code> is <code>enc</code>, <code>dec</code> or <code>both</code>; <code>n</code> is letters per key; add <code>key=letter</code> for letter keys). Students can paste "Copy summary" into your chat.</p>
           </div>
         </div>
       </div>

@@ -108,6 +108,26 @@ fieldset.opt legend {
 }
 .stage-kicker.n2a { background: var(--teal-soft); color: #147a68; }
 
+/* key banner for drills that hold a key over a run of prompts (Caesar) */
+.run-banner {
+  display: inline-flex; align-items: center; flex-wrap: wrap; justify-content: center; gap: .35rem .75rem;
+  margin: -.2rem 0 1.1rem; padding: .45rem .5rem .45rem .95rem; border-radius: 16px;
+  background: var(--gold-soft); border: 1.5px dashed #f2d69b;
+  font-family: var(--font-display); color: #7a4e08;
+}
+.run-banner .k { font-weight: 600; font-size: .74rem; letter-spacing: .06em; text-transform: uppercase; }
+.run-banner .key { font-family: var(--font-mono); font-weight: 700; font-size: 1.7rem; line-height: 1; color: #9a6410; }
+.run-banner .hint { font-weight: 500; font-size: .9rem; color: #9a6410; }
+.run-banner .pos { display: inline-flex; align-items: center; gap: .5rem; margin-left: .25rem; padding: .25rem .6rem; border-radius: 999px; background: #fff; font-size: .8rem; font-weight: 600; color: var(--muted); }
+.run-banner .dots { display: inline-flex; gap: 3px; }
+.run-banner .dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--line-strong); }
+.run-banner .dots i.on { background: var(--gold); }
+.run-banner.is-new { animation: key-pop .45s ease-out; }
+@keyframes key-pop {
+  0% { transform: scale(.96); box-shadow: 0 0 0 0 rgba(245, 185, 66, .6); }
+  100% { transform: scale(1); box-shadow: 0 0 0 14px rgba(245, 185, 66, 0); }
+}
+
 /* the cipher cell, scaled up */
 .tile {
   --tile: clamp(120px, 32vw, 168px);

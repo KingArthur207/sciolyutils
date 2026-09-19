@@ -11,6 +11,8 @@ event (Codebusters first). Static site, no build step, hosted on Vercel.
   26-letter table.
 - **morse** (`/morse/`): letter ↔ Morse as Fractionated Morse uses it, with a tap pad for
   dots and dashes on phones; digits optional.
+- **caesar** (`/caesar/`): a shift key (1–25) is dealt and held for N consecutive letters
+  (5 by default); encrypt or decrypt each letter. Weak spots are reported per key.
 
 Every drill has the same shell: settings, timer, live score, instant advance on a right
 answer, personal bests per setting, a weak-spot report, and a shareable summary.
@@ -42,7 +44,7 @@ with Node's built-in test runner.
 ```
 index.html                 Hub: hero + applet groups (rendered from the registry)
 404.html                   Themed not-found page (Vercel picks it up automatically)
-alpha2num/ baconian/ morse/
+alpha2num/ baconian/ morse/ caesar/
   index.html               The applet page (settings → play → results)
   spec.js                  What this drill converts: directions, cards, extras (pure, tested)
   app.js                   Two lines: createDrill(spec)

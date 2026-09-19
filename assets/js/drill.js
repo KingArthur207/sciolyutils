@@ -6,10 +6,14 @@
      id, name                     storage namespace + display name
      defaults                     extra settings (merged over dirA/dirB/seconds/strip)
      directions(settings)         -> [dirA, dirB]; each direction:
-        { id, label, tone, cards:[{key, shown, answer, accept?, answerLabel?}],
+        { id, label, tone, cards:[{key, shown, answer, accept?, answerLabel?}]
+          (or size + card(index, context) to generate them),
+          run?: { length, size, context(i), label(ctx), hint?(ctx) }  — a key held for
+          `length` prompts, shown in the #context banner when the page has one,
           normalize(raw), display?(canonical), sr?(card), answerLabel?(card),
           inputmode, maxlength, shownWide?, answerWide?, shownClass?, answerClass?,
           pad?: [{label, value}] }
+     Cards may set statKey/statShown/statAnswer to group the weak-spot report.
      readExtras(form) / applyExtras(form, s) / urlExtras(params, s) / sanitizeExtras(s)
      extrasKey(s) / extrasLabel(s) / urlQuery(s)
      strip(settings)              -> [{ top, bottom }] columns for the reference strip
@@ -91,10 +95,10 @@ export function createDrill(spec) {
     trainer: $("#trainer"),
     setup: $("#setup"), play: $("#play"), done: $("#done"),
     dirA: $("#opt-dirA"), dirB: $("#opt-dirB"), optStrip: $("#opt-strip"), optSeconds: $("#opt-seconds"),
-    dirHelp: $("#dir-help"), chips: $$(".chip[data-seconds]"), pbLine: $("#pb-line"), start: $("#start"),
+    dirHelp: $("#dir-help"), chips: $$(".chip[data-field]"), pbLine: $("#pb-line"), start: $("#start"),
     time: $("#time"), timeStat: $("#time-stat"), score: $("#score"), end: $("#end"),
     progress: $("#progress"), progressBar: $("#progress-bar"),
-    stage: $("#stage"), kicker: $("#kicker"), tile: $("#tile"), tileText: $("#tile-text"), tileSr: $("#tile-sr"),
+    stage: $("#stage"), kicker: $("#kicker"), context: $("#context"), tile: $("#tile"), tileText: $("#tile-text"), tileSr: $("#tile-sr"),
     answer: $("#answer"), pad: $("#pad"), reveal: $("#reveal"), strip: $("#strip"),
     doneEyebrow: $("#done-eyebrow"), doneHeading: $("#done-heading"), doneScore: $("#done-score"), doneSub: $("#done-sub"),
     donePb: $("#done-pb"), doneStats: $("#done-stats"), trouble: $("#trouble"),
@@ -135,9 +139,13 @@ export function createDrill(spec) {
     });
   }
 
+  /* quick-set chips: <button class="chip" data-field="seconds" data-value="60"> sets that form field */
+  const chipTarget = (c) => el.setup.elements[c.dataset.field];
   function syncChips() {
-    const v = String(clampSeconds(el.optSeconds.value));
-    el.chips.forEach((c) => c.setAttribute("aria-pressed", c.dataset.seconds === v ? "true" : "false"));
+    el.chips.forEach((c) => {
+      const t = chipTarget(c);
+      c.setAttribute("aria-pressed", t && String(t.value) === c.dataset.value ? "true" : "false");
+    });
   }
 
   function refreshPbLine() {
@@ -192,8 +200,23 @@ export function createDrill(spec) {
     el.pad.hidden = false;
   }
 
+  function renderRun(dir, run) {
+    if (!el.context) return;
+    if (!run || !dir.run) { el.context.hidden = true; el.context.innerHTML = ""; return; }
+    const dots = run.length <= 10
+      ? `<span class="dots" aria-hidden="true">${Array.from({ length: run.length }, (_, i) => `<i${i < run.position ? ' class="on"' : ""}></i>`).join("")}</span>`
+      : "";
+    el.context.innerHTML = `
+      <span class="k">Key</span><b class="key">${esc(dir.run.label(run.context))}</b>
+      ${dir.run.hint ? `<span class="hint">${esc(dir.run.hint(run.context))}</span>` : ""}
+      <span class="pos">${dots}<span>${run.position} of ${run.length}</span></span>`;
+    el.context.hidden = false;
+    el.context.classList.toggle("is-new", run.position === 1);
+  }
+
   function showPrompt() {
-    const { dir, card } = state.round.next(performance.now());
+    const { dir, card, run } = state.round.next(performance.now());
+    renderRun(dir, run);
     el.kicker.textContent = dir.label;
     el.kicker.className = `stage-kicker ${dir.tone === "teal" ? "n2a" : ""}`;
     el.tileText.textContent = card.shown;
@@ -361,7 +384,10 @@ export function createDrill(spec) {
       if (t.revealed) bits.push(`<b>revealed</b>`);
       if (t.misses) bits.push(`<b>${t.misses}</b> ${t.misses === 1 ? "miss" : "misses"}`);
       if (t.avgMs !== null) bits.push(fmtSec(t.avgMs));
-      return `<li class="chip-stat"><span class="pair"><i class="q">${esc(t.shown)}</i><span class="arr">→</span><i class="a">${esc(t.answerLabel)}</i></span><small>${bits.join(" · ")}</small></li>`;
+      const pair = t.answerLabel
+        ? `<i class="q">${esc(t.shown)}</i><span class="arr">→</span><i class="a">${esc(t.answerLabel)}</i>`
+        : `<i class="q">${esc(t.shown)}</i>`;
+      return `<li class="chip-stat"><span class="pair">${pair}</span><small>${bits.join(" · ")}</small></li>`;
     }).join("");
     el.trouble.innerHTML = `
       <h3>Weak spots</h3>
@@ -383,7 +409,7 @@ export function createDrill(spec) {
       head,
       `Score ${sum.score} · ${sum.misses} misses · ${sum.accuracy === null ? "—" : pct(sum.accuracy)} accuracy · ${sum.avgMs === null ? "—" : fmtSec(sum.avgMs)} avg · best streak ${sum.bestStreak}`,
     ];
-    if (sum.trouble.length) lines.push(`Weak spots: ${sum.trouble.map((t) => `${t.shown}→${t.answerLabel}`).join(", ")}`);
+    if (sum.trouble.length) lines.push(`Weak spots: ${sum.trouble.map((t) => (t.answerLabel ? `${t.shown}→${t.answerLabel}` : t.shown)).join(", ")}`);
     const extra = spec.urlQuery ? `&${spec.urlQuery(s)}` : "";
     lines.push(`${location.origin}${location.pathname}?dir=${dirsKey(s)}&t=${s.seconds}${extra}`);
     return lines.join("\n");
@@ -411,10 +437,12 @@ export function createDrill(spec) {
     el.setup.addEventListener("submit", (e) => { e.preventDefault(); start(); });
     [el.dirA, el.dirB].forEach((cb) => cb.addEventListener("change", () => { guardDirections(cb); refreshPbLine(); }));
     el.setup.addEventListener("change", (e) => { if (e.target !== el.dirA && e.target !== el.dirB) refreshPbLine(); });
-    el.optSeconds.addEventListener("input", () => { syncChips(); refreshPbLine(); });
-    el.optSeconds.addEventListener("blur", () => { el.optSeconds.value = String(clampSeconds(el.optSeconds.value)); syncChips(); refreshPbLine(); });
+    el.setup.addEventListener("input", (e) => { if (e.target.matches('input[type="number"]')) { syncChips(); refreshPbLine(); } });
+    // leaving a number field snaps it into range (seconds 5–3600, applet extras via sanitizeExtras)
+    el.setup.addEventListener("focusout", (e) => { if (e.target.matches('input[type="number"]')) applySettingsToForm(readForm()); });
     el.chips.forEach((c) => c.addEventListener("click", () => {
-      el.optSeconds.value = c.dataset.seconds;
+      const t = chipTarget(c);
+      if (t) t.value = c.dataset.value;
       syncChips(); refreshPbLine();
     }));
 

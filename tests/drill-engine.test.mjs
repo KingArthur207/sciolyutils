@@ -157,3 +157,79 @@ test("Round: weak-spot list is capped and ordered by severity", () => {
   for (let i = 1; i < s.trouble.length; i++) assert.ok(s.trouble[i - 1].weight >= s.trouble[i].weight);
   assert.equal(s.trouble[0].misses, 7);
 });
+
+/* a generated-card direction with a key run, like the Caesar drill */
+const runDir = (length, id = "enc") => ({
+  id, label: "Encrypt", size: 26,
+  run: { length, size: 25, context: (i) => ({ key: i + 1 }), label: (c) => String(c.key) },
+  card: (i, ctx) => {
+    const L = ALPHABET[i];
+    return { key: `${L}@${ctx.key}`, shown: L, answer: ALPHABET[(i + ctx.key) % 26], statKey: `+${ctx.key}`, statShown: `shift +${ctx.key}`, statAnswer: "", context: ctx };
+  },
+});
+
+test("Round: generated cards use the context, and runs hold a key for exactly N prompts", () => {
+  for (const N of [1, 3, 5, 10]) {
+    const r = new Round({ directions: [runDir(N)], rng: seeded(N) });
+    const keys = [];
+    for (let i = 0; i < N * 12; i++) {
+      const { card, run } = r.next(i);
+      assert.equal(run.length, N);
+      assert.equal(run.position, (i % N) + 1, `N=${N} prompt ${i}`);
+      assert.equal(card.context.key, run.context.key);
+      assert.equal(card.answer, ALPHABET[(ALPHABET.indexOf(card.shown) + run.context.key) % 26]);
+      keys.push(run.context.key);
+      assert.equal(r.submit(card.answer, i), "correct");
+    }
+    // the key is constant inside each run and changes between consecutive runs
+    for (let b = 0; b < 12; b++) {
+      const block = keys.slice(b * N, b * N + N);
+      assert.ok(block.every((k) => k === block[0]), `N=${N} block ${b} constant`);
+      if (b > 0) assert.notEqual(block[0], keys[(b - 1) * N], `N=${N} block ${b} changed key`);
+    }
+    // 25 keys are dealt once each before any repeats (the run deck)
+    const firstKeys = keys.filter((_, i) => i % N === 0).slice(0, 12);
+    assert.equal(new Set(firstKeys).size, 12);
+  }
+});
+
+test("Round: with two run directions the direction is fixed inside a run", () => {
+  const r = new Round({ directions: [runDir(5, "enc"), runDir(5, "dec")], rng: seeded(21) });
+  const ids = new Set();
+  for (let b = 0; b < 20; b++) {
+    const first = r.next(b * 5);
+    ids.add(first.dir.id);
+    r.submit(first.card.answer, 0);
+    for (let i = 1; i < 5; i++) {
+      const { dir, run, card } = r.next(b * 5 + i);
+      assert.equal(dir.id, first.dir.id);
+      assert.equal(run.context.key, first.run.context.key);
+      r.submit(card.answer, 0);
+    }
+  }
+  assert.deepEqual([...ids].sort(), ["dec", "enc"]);
+});
+
+test("Round: weak spots group by statKey and show statShown with an empty answer label", () => {
+  const r = new Round({ directions: [runDir(3)], rng: seeded(4), revealAfter: 0 });
+  const { card, run } = r.next(0);
+  r.submit(card.answer === "A" ? "B" : "A", 10);         // one miss on this key
+  r.submit(card.answer, 20);
+  const second = r.next(30);                              // same key, same run
+  assert.equal(second.run.context.key, run.context.key);
+  r.submit(second.card.answer === "A" ? "B" : "A", 40);
+  r.submit(second.card.answer, 50);
+  const s = r.summary({ durationSec: 30 });
+  assert.equal(s.trouble.length, 1);
+  assert.equal(s.trouble[0].cardKey, `+${run.context.key}`);
+  assert.equal(s.trouble[0].shown, `shift +${run.context.key}`);
+  assert.equal(s.trouble[0].answerLabel, "");
+  assert.equal(s.trouble[0].misses, 2);
+  assert.equal(s.trouble[0].attempts, 2);
+});
+
+test("Round: malformed generated directions are rejected", () => {
+  assert.throws(() => new Round({ directions: [{ id: "g", card: () => ({}) }] }));           // no size
+  assert.throws(() => new Round({ directions: [{ id: "g", size: 3, card: () => ({}), run: { length: 0, size: 2, context: () => ({}) } }] }));
+  assert.throws(() => new Round({ directions: [{ id: "g", size: 3, card: () => ({}), run: { length: 2, size: 2 } }] }));  // no context()
+});

@@ -49,6 +49,17 @@ export const APPLETS = [
     desc: "Letters to Morse and back, the way Fractionated Morse, Morbit and Pollux need it. Type dots and dashes or tap them on the pad.",
     tags: ["Timed", "Both directions", "Tap pad for phones", "Weak-spot report"],
   },
+  {
+    slug: "caesar",
+    title: "caesar",
+    group: "Codebusters Training",
+    href: "/caesar/",
+    glyph: "+3",
+    badge: "Speed drill",
+    badgeTone: "teal",
+    desc: "A shift key is dealt and held for a run of letters; encrypt or decrypt each one. Choose how many letters share a key (five by default, like classic cipher groups).",
+    tags: ["Timed", "Encrypt & decrypt", "Key runs", "Weak spots per key"],
+  },
 ];
 
 export const FOOTER_LINKS = [
