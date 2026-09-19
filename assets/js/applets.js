@@ -27,6 +27,28 @@ export const APPLETS = [
     desc: "Zetamac-style sprint: a letter flashes up, you type its number (A = 0 … Z = 25), or the other way round. Race the clock, beat your best.",
     tags: ["Timed", "Both directions", "Personal bests", "Weak-spot report"],
   },
+  {
+    slug: "baconian",
+    title: "baconian",
+    group: "Codebusters Training",
+    href: "/baconian/",
+    glyph: "AB",
+    badge: "Speed drill",
+    badgeTone: "teal",
+    desc: "Letters to five-letter Baconian codes and back (A = AAAAA … Z = BABBB), using the 24-letter I/J, U/V table Science Olympiad tests print. 26-letter mode too.",
+    tags: ["Timed", "Both directions", "24- or 26-letter", "Weak-spot report"],
+  },
+  {
+    slug: "morse",
+    title: "morse",
+    group: "Codebusters Training",
+    href: "/morse/",
+    glyph: "•–",
+    badge: "Speed drill",
+    badgeTone: "teal",
+    desc: "Letters to Morse and back, the way Fractionated Morse, Morbit and Pollux need it. Type dots and dashes or tap them on the pad.",
+    tags: ["Timed", "Both directions", "Tap pad for phones", "Weak-spot report"],
+  },
 ];
 
 export const FOOTER_LINKS = [

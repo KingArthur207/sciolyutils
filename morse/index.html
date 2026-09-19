@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>alpha2num · sciolyutils</title>
-  <meta name="description" content="Zetamac-style speed drill for Codebusters: convert letters to numbers (A = 0 … Z = 25) and numbers to letters against the clock.">
+  <title>morse · sciolyutils</title>
+  <meta name="description" content="Zetamac-style speed drill for Morse code as Science Olympiad's Fractionated Morse, Morbit and Pollux use it: letters to dots and dashes and back, against the clock.">
   <meta name="theme-color" content="#3b53d9">
   <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,15 +13,15 @@
   <link rel="stylesheet" href="/assets/css/base.css">
   <link rel="stylesheet" href="/assets/css/trainer.css">
   <script type="module" src="/assets/js/site.js"></script>
-  <script type="module" src="/alpha2num/app.js"></script>
+  <script type="module" src="/morse/app.js"></script>
 </head>
 <body>
   <main id="main">
     <header class="page-head">
       <div class="wrap">
-        <p class="crumbs"><a href="/">Home</a> / alpha2num</p>
-        <h1 class="mono">alpha2num</h1>
-        <p class="lead">Letters to numbers and back, against the clock. See <b>Q</b>, type <b>16</b>. See <b>16</b>, type <b>Q</b>. A right answer advances instantly, no Enter needed.</p>
+        <p class="crumbs"><a href="/">Home</a> / morse</p>
+        <h1 class="mono">morse</h1>
+        <p class="lead">Letters to Morse and back, the way Fractionated Morse needs it. See <b>Q</b>, type <b>– – • –</b>. See <b>– – • –</b>, type <b>Q</b>. Type dots and dashes or tap them on the pad.</p>
         <a class="back" href="/">← All applets</a>
       </div>
     </header>
@@ -38,23 +38,24 @@
                 <label class="switch">
                   <input type="checkbox" id="opt-dirA" name="dirA" checked>
                   <span class="track" aria-hidden="true"><span class="thumb"></span></span>
-                  <span class="text"><b>Letter → number</b><small>See <span class="ex">Q</span>, type <span class="ex">16</span></small></span>
+                  <span class="text"><b>Letter → Morse</b><small>See <span class="ex">Q</span>, type <span class="ex">––•–</span></small></span>
                 </label>
                 <label class="switch">
                   <input type="checkbox" id="opt-dirB" name="dirB" checked>
                   <span class="track" aria-hidden="true"><span class="thumb"></span></span>
-                  <span class="text"><b>Number → letter</b><small>See <span class="ex">16</span>, type <span class="ex">Q</span></small></span>
+                  <span class="text"><b>Morse → letter</b><small>See <span class="ex">––•–</span>, type <span class="ex">Q</span></small></span>
                 </label>
                 <p class="opt-help" id="dir-help" aria-live="polite">Turn on one or both. With both on, prompts alternate at random.</p>
               </fieldset>
 
               <fieldset class="opt">
-                <legend>Numbering</legend>
-                <div class="pills">
-                  <label class="pill"><input type="radio" name="base" value="0" checked><span>A&nbsp;=&nbsp;0 … Z&nbsp;=&nbsp;25</span></label>
-                  <label class="pill"><input type="radio" name="base" value="1"><span>A&nbsp;=&nbsp;1 … Z&nbsp;=&nbsp;26</span></label>
-                </div>
-                <p class="opt-help">Codebusters counts from A = 0 for Affine and Hill. Switch to A = 1 if that is how you count.</p>
+                <legend>Symbols</legend>
+                <label class="switch">
+                  <input type="checkbox" id="opt-digits" name="digits">
+                  <span class="track" aria-hidden="true"><span class="thumb"></span></span>
+                  <span class="text"><b>Include digits 0–9</b><small>Off by default: Codebusters' Morse ciphers only use letters.</small></span>
+                </label>
+                <p class="opt-help">Fractionated Morse writes <span class="mono">x</span> between letters and <span class="mono">xx</span> between words; that part is the cipher, not the code, so it is not drilled here.</p>
               </fieldset>
 
               <fieldset class="opt">
@@ -71,7 +72,7 @@
                     <span aria-hidden="true">seconds</span>
                   </label>
                 </div>
-                <p class="opt-help">Zetamac's default is 120. Anything from 5 to 3600 seconds works.</p>
+                <p class="opt-help">Anything from 5 to 3600 seconds works.</p>
               </fieldset>
 
               <fieldset class="opt">
@@ -79,9 +80,9 @@
                 <label class="switch">
                   <input type="checkbox" id="opt-strip" name="strip">
                   <span class="track" aria-hidden="true"><span class="thumb"></span></span>
-                  <span class="text"><b>Show the A–Z strip</b><small>Training wheels: keep the whole letter/number table on screen during the round.</small></span>
+                  <span class="text"><b>Show the Morse table</b><small>Training wheels: keep the whole table on screen during the round.</small></span>
                 </label>
-                <p class="opt-help">After three misses on one prompt the answer is revealed so you can move on; it does not score.</p>
+                <p class="opt-help">Keys: <kbd>.</kbd> or <kbd>,</kbd> for a dot, <kbd>-</kbd> or <kbd>_</kbd> for a dash. After three misses on one prompt the answer is revealed; it does not score.</p>
               </fieldset>
             </div>
 
@@ -101,13 +102,13 @@
             <div class="progress" id="progress" aria-hidden="true"><span id="progress-bar"></span></div>
 
             <div class="stage" id="stage">
-              <span class="stage-kicker" id="kicker">Letter → number</span>
+              <span class="stage-kicker" id="kicker">Letter → Morse</span>
               <div class="tile" id="tile" aria-live="polite" aria-atomic="true">
                 <span id="tile-text" aria-hidden="true">Q</span>
                 <span class="visually-hidden" id="tile-sr"></span>
               </div>
               <div class="answer-wrap">
-                <input class="tile-input" id="answer" type="text" maxlength="2" aria-label="Your answer"
+                <input class="tile-input" id="answer" type="text" maxlength="5" aria-label="Your answer"
                        autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" enterkeyhint="done">
               </div>
               <div class="pad" id="pad" hidden></div>
@@ -115,7 +116,7 @@
               <p class="stage-hint">Right answers advance on their own. Wrong ones clear so you can retype.</p>
             </div>
 
-            <div class="ref-strip" id="strip" hidden aria-label="Letter and number reference"></div>
+            <div class="ref-strip" id="strip" hidden aria-label="Morse table"></div>
           </div>
 
           <!-- ================= DONE ================= -->
@@ -141,19 +142,19 @@
         <div class="notes">
           <div class="card">
             <h3>Why drill this?</h3>
-            <p>Affine, Hill and every mod-26 step lean on instant letter ↔ number recall. Every second spent counting on your fingers is a second not spent solving.</p>
+            <p>Fractionated Morse, Morbit and Pollux all start and end with Morse. The table is printed on the test, but every glance at it is a context switch. Fluent Morse lets you read the plaintext as the triplets fall out.</p>
           </div>
           <div class="card">
             <h3>How to get fast</h3>
             <ul>
-              <li>Anchor the landmarks first: A0 · E4 · J9 · O14 · T19 · Z25.</li>
-              <li>Run the strip for a day, then turn it off.</li>
-              <li>Do one direction until it is clean, then mix.</li>
+              <li>Learn by length: E T · I A N M · S U R W D K G O · then the fours.</li>
+              <li>Pairs that mirror: A <span class="mono">•–</span> / N <span class="mono">–•</span>, D <span class="mono">–••</span> / U <span class="mono">••–</span>, B <span class="mono">–•••</span> / V <span class="mono">•••–</span>.</li>
+              <li>Do Morse → letter first; that is the direction decoding needs.</li>
             </ul>
           </div>
           <div class="card">
             <h3>For coaches</h3>
-            <p>Link a preset round: <code>/alpha2num/?dir=a2n&amp;t=60</code> (<code>dir</code> is <code>a2n</code>, <code>n2a</code> or <code>both</code>; add <code>base=1</code> for A = 1). Students can paste "Copy summary" into your chat.</p>
+            <p>Link a preset round: <code>/morse/?dir=m2l&amp;t=90</code> (<code>dir</code> is <code>l2m</code>, <code>m2l</code> or <code>both</code>; add <code>digits=1</code> to include 0–9). Students can paste "Copy summary" into your chat.</p>
           </div>
         </div>
       </div>

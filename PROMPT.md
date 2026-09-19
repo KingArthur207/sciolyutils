@@ -25,8 +25,9 @@ should be able to open it on a phone or laptop, pick a drill, and be practising 
 - **Keyboard-first and accessible.** Real form controls (checkbox/radio/number) styled
   with CSS, visible focus rings, labels or `aria-label` on every control, live regions for
   prompts and reveals, focus moved sensibly on view changes, reduced-motion respected.
-- **Careful, tested logic.** Game logic lives in a pure `engine.js` with unit tests under
-  `tests/` (`npm test`). The DOM layer stays thin.
+- **Careful, tested logic.** Game logic lives in the shared pure `assets/js/drill-engine.js`
+  and each applet's pure `spec.js`, with unit tests under `tests/` (`npm test`). The shared
+  DOM controller `assets/js/drill.js` stays the only place that touches the page.
 - Storage is best-effort `localStorage` (guarded; private mode must not break anything).
 
 ## Theme (from code.sciovirtual.org)
@@ -46,8 +47,11 @@ Tokens live in `assets/css/base.css`; never hard-code colours in a page.
 
 ## Applet conventions
 
-Each applet = `/<slug>/index.html` + `engine.js` + `app.js`, plus a registry entry
-(`slug, title, group, href, glyph, badge, desc, tags`) and a test file.
+Each applet = `/<slug>/index.html` + `spec.js` (directions, cards, extras; pure) + a
+two-line `app.js` (`createDrill(spec)`), plus a registry entry (`slug, title, group, href,
+glyph, badge, desc, tags`) and spec tests. Directions can mark long prompts/answers
+`shownWide`/`answerWide`, provide a `display` for pretty output (Morse dots), accept several
+answers per card (Baconian I/J), and offer a tap `pad` for symbols phones lack.
 
 Page structure: `page-head` (crumbs, mono title, one-paragraph lead, back link) →
 `.trainer` card with three views: **setup** (form; Enter starts), **play** (HUD with time
@@ -80,6 +84,20 @@ Zetamac-style speed drill for `A–Z ↔ 0–25`.
 - Keyboard: Enter starts, Esc ends early. Mobile: a numeric keypad only when every
   answer is a number; otherwise the text keyboard for the whole round.
 
+## baconian (built)
+
+Same shell as alpha2num for letter ↔ five-letter A/B code. Default **24-letter table**
+(I/J share ABAAA, U/V share BAABB, as printed on Science Olympiad tests; either letter is
+accepted), optional **26-letter** table (index in binary, A = 0). 0/1 may be typed for A/B.
+Codes are shown in a wide tile; the answer box is wide.
+
+## morse (built)
+
+Same shell for letter ↔ Morse as Fractionated Morse, Morbit and Pollux use it. Letters only
+by default, **digits 0–9** optional. Canonical answers use `.`/`-`; the page displays `•`/`–`
+and accepts `.`, `,`, `•` for dots and `-`, `_`, `–`, `—` for dashes. A two-key **tap pad**
+(plus backspace) sits under the answer box for phones. Screen readers hear "dit"/"dah".
+
 ## Quality bar before shipping a change
 
 1. `npm test` passes.
@@ -92,6 +110,5 @@ Zetamac-style speed drill for `A–Z ↔ 0–25`.
 
 - **mod26**: add/subtract/multiply mod 26 (Affine, Hill, Vigenère shifts).
 - **affine-inverse**: recall the multiplicative inverses mod 26 (1, 3, 5, 7, 9, 11, 15, 17, 19, 21, 23, 25).
-- **morse-sprint** and **baconian-sprint**: symbol ↔ letter recall.
 - **polybius**: coordinate ↔ letter for a keyed 5×5 square.
 - **freq-rank**: order letters by English frequency (ETAOIN SHRDLU).

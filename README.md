@@ -6,8 +6,14 @@ event (Codebusters first). Static site, no build step, hosted on Vercel.
 - **Hub** (`/`): applets grouped under a styled heading per event ("Codebusters
   Training"). Every applet is its own page with a way back.
 - **alpha2num** (`/alpha2num/`): zetamac-style sprint for letter ↔ number conversion
-  (A = 0 … Z = 25, or A = 1 … Z = 26). Settings, timer, live score, personal bests,
-  weak-spot report, shareable summary.
+  (A = 0 … Z = 25, or A = 1 … Z = 26).
+- **baconian** (`/baconian/`): letter ↔ five-letter A/B code, 24-letter (I/J, U/V) or
+  26-letter table.
+- **morse** (`/morse/`): letter ↔ Morse as Fractionated Morse uses it, with a tap pad for
+  dots and dashes on phones; digits optional.
+
+Every drill has the same shell: settings, timer, live score, instant advance on a right
+answer, personal bests per setting, a weak-spot report, and a shareable summary.
 
 The look matches [code.sciovirtual.org](https://code.sciovirtual.org/) (flat `#3b53d9`
 blue, `#44cab2` teal, `#202525` footer, Poppins + Lato + Space Mono, pill buttons).
@@ -28,23 +34,25 @@ because it uses JavaScript modules and root-absolute URLs.
 npm test
 ```
 
-Runs the unit tests for the applet engines (`tests/*.test.mjs`) with Node's built-in
-test runner.
+Runs the unit tests for the shared engine and each applet's spec (`tests/*.test.mjs`)
+with Node's built-in test runner.
 
 ## Layout
 
 ```
 index.html                 Hub: hero + applet groups (rendered from the registry)
 404.html                   Themed not-found page (Vercel picks it up automatically)
-alpha2num/
+alpha2num/ baconian/ morse/
   index.html               The applet page (settings → play → results)
-  engine.js                Pure game logic, no DOM (tested)
-  app.js                   Wires the engine to the page, localStorage, URL presets
+  spec.js                  What this drill converts: directions, cards, extras (pure, tested)
+  app.js                   Two lines: createDrill(spec)
 assets/
   css/base.css             Design system: tokens, header/nav, buttons, cards, footer
-  css/trainer.css          Shared applet UI: settings panel, HUD, tiles, results
+  css/trainer.css          Shared applet UI: settings panel, HUD, tiles, tap pad, results
   js/applets.js            <- applet registry: single source of truth for nav + hub + footer
-  js/site.js               Renders header, footer and the hub grid on every page
+  js/site.js               Renders header, footer and the hub groups on every page
+  js/drill-engine.js       Shared pure game logic: decks, prefix judging, scoring, weak spots
+  js/drill.js              Shared page controller: settings, timer, views, bests, presets
   img/                     Favicon and brand mark
 tests/                     node:test unit tests
 tools/serve.mjs            Tiny static dev server (mirrors Vercel: index.html, 404.html)
@@ -54,9 +62,11 @@ vercel.json                Vercel config (static, trailing slashes, asset cachin
 
 ## Add an applet
 
-1. Create a folder with an `index.html` (copy `alpha2num/index.html` for the shell:
-   `page-head` with crumbs + back link, a `.trainer` card, the `notes` cards).
-2. Keep the logic in a pure `engine.js` you can unit-test, and a thin `app.js` for the DOM.
+1. Copy an applet folder (`baconian/` is a good template). Edit the copy in `index.html`
+   and the extra settings fieldset if you need one.
+2. Write `spec.js`: two directions with their cards (`{ key, shown, answer, accept?,
+   answerLabel? }`), a `normalize` per direction, and any extra settings. `app.js` stays
+   two lines. See the header comment in `assets/js/drill.js` for the full spec shape.
 3. Register it in `assets/js/applets.js` with a `group` (e.g. `"Codebusters Training"`;
    a new event just needs a new group name). That adds it to the hub, the header nav
    and the footer.

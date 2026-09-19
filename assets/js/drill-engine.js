@@ -1,27 +1,13 @@
 /* =========================================================================
-   alpha2num/engine.js — pure game logic, no DOM.
-   Letters <-> numbers, a reshuffling deck so every letter comes up evenly,
-   a prefix-aware judge for zetamac-style "advance the instant it's right",
-   and a Round that keeps score plus per-letter stats for the weak-spot report.
-   Exercised by tests/alpha2num.test.mjs (npm test).
+   drill-engine.js — pure game logic shared by every speed-drill applet.
+   No DOM. A drill is a set of *directions*; each direction has *cards*
+   ({ key, shown, answer, accept?, answerLabel? }). A Round deals cards from a
+   reshuffling deck per direction, judges typed input prefix-wise so a right
+   answer can advance the instant it is complete, and keeps per-card stats
+   for the weak-spot report. Exercised by tests/drill-engine.test.mjs.
    ========================================================================= */
 
 export const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-export const KINDS = Object.freeze({ A2N: "a2n", N2A: "n2a" });
-
-/** 'Q' -> 16 (base 0) or 17 (base 1). */
-export function letterToNumber(letter, base = 0) {
-  const i = ALPHABET.indexOf(String(letter).toUpperCase());
-  if (i < 0) throw new RangeError(`not a letter: ${letter}`);
-  return i + base;
-}
-
-/** 16 -> 'Q' (base 0); 17 -> 'Q' (base 1). */
-export function numberToLetter(n, base = 0) {
-  const i = Number(n) - base;
-  if (!Number.isInteger(i) || i < 0 || i > 25) throw new RangeError(`out of range: ${n}`);
-  return ALPHABET[i];
-}
 
 /** Fisher–Yates; returns a new array. `rng` returns [0, 1). */
 export function shuffle(arr, rng = Math.random) {
@@ -35,13 +21,14 @@ export function shuffle(arr, rng = Math.random) {
 
 /**
  * A shuffled deck of 0..size-1. Deals every card once before reshuffling, so
- * over 26 prompts every letter appears exactly once. It never deals the same
+ * over `size` prompts every card appears exactly once. Never deals the same
  * card twice in a row across a reshuffle.
  */
 export class Deck {
-  constructor(rng = Math.random, size = 26) {
-    this.rng = rng;
+  constructor({ size, rng = Math.random }) {
+    if (!Number.isInteger(size) || size < 1) throw new RangeError(`bad deck size: ${size}`);
     this.size = size;
+    this.rng = rng;
     this.cards = [];
     this.last = -1;
   }
@@ -61,48 +48,33 @@ export class Deck {
   }
 }
 
-/** Build a prompt for a direction and a 0-based letter index. */
-export function makePrompt(kind, index, base = 0) {
-  if (kind !== KINDS.A2N && kind !== KINDS.N2A) throw new RangeError(`bad kind: ${kind}`);
-  if (!Number.isInteger(index) || index < 0 || index > 25) throw new RangeError(`bad index: ${index}`);
-  const letter = ALPHABET[index];
-  const num = String(index + base);
-  return kind === KINDS.A2N
-    ? { kind, index, shown: letter, answer: num }
-    : { kind, index, shown: num, answer: letter };
-}
-
-/** Keep only the characters a direction can use: digits for a2n, letters for n2a (upper-cased). */
-export function normalizeTyped(kind, raw) {
-  const s = String(raw ?? "");
-  return kind === KINDS.A2N ? s.replace(/\D+/g, "") : s.replace(/[^a-z]/gi, "").toUpperCase();
-}
+/** All answers a card accepts (canonical strings). */
+export const acceptedAnswers = (card) => (card.accept && card.accept.length ? card.accept : [card.answer]);
 
 /**
- * 'correct'  — typed equals the answer
- * 'pending'  — typed is empty or a prefix of the answer ("1" on the way to "11")
- * 'wrong'    — typed can no longer become the answer
+ * 'correct'  — typed equals an accepted answer
+ * 'pending'  — typed is empty or a prefix of an accepted answer ("1" on the way to "11")
+ * 'wrong'    — typed can no longer become an accepted answer
  */
-export function judge(answer, typed) {
+export function judge(card, typed) {
   if (!typed) return "pending";
-  if (typed === answer) return "correct";
-  if (answer.startsWith(typed)) return "pending";
+  const accept = acceptedAnswers(card);
+  if (accept.includes(typed)) return "correct";
+  if (accept.some((a) => a.startsWith(typed))) return "pending";
   return "wrong";
 }
 
-/** Which direction(s) a round mixes, as a short stable label (used for personal-best keys). */
-export function directionLabel(a2n, n2a) {
-  if (a2n && n2a) return "both";
-  if (a2n) return "a2n";
-  if (n2a) return "n2a";
-  throw new Error("at least one direction must be on");
+/** Human label for a card's answer (what the reveal and weak-spot chips show). */
+export function answerLabelOf(dir, card) {
+  if (card.answerLabel) return card.answerLabel;
+  return dir.display ? dir.display(card.answer) : card.answer;
 }
 
 /**
  * One timed round. Time is passed in explicitly (ms) so this stays testable.
  *
- *   const r = new Round({ a2n: true, n2a: true, base: 0 });
- *   r.next(now);                    // -> prompt { kind, index, shown, answer }
+ *   const r = new Round({ directions: [dirA, dirB] });
+ *   r.next(now);                    // -> { dir, card }
  *   r.submit(typed, now);           // -> 'correct' | 'pending' | 'wrong'
  *   r.summary({ durationSec: 60 }); // -> stats for the results screen
  *
@@ -110,14 +82,16 @@ export function directionLabel(a2n, n2a) {
  * then moves on but does not score.
  */
 export class Round {
-  constructor({ a2n = true, n2a = true, base = 0, rng = Math.random, revealAfter = 3 } = {}) {
-    this.kinds = [...(a2n ? [KINDS.A2N] : []), ...(n2a ? [KINDS.N2A] : [])];
-    if (this.kinds.length === 0) throw new Error("at least one direction must be on");
-    if (base !== 0 && base !== 1) throw new RangeError(`base must be 0 or 1, got ${base}`);
-    this.base = base;
+  constructor({ directions, rng = Math.random, revealAfter = 3 } = {}) {
+    if (!Array.isArray(directions) || directions.length === 0) throw new Error("at least one direction must be on");
+    for (const d of directions) {
+      if (!d || !d.id) throw new Error("direction needs an id");
+      if (!Array.isArray(d.cards) || d.cards.length === 0) throw new Error(`direction ${d.id} has no cards`);
+    }
+    this.directions = directions;
     this.rng = rng;
     this.revealAfter = revealAfter;
-    this.decks = { [KINDS.A2N]: new Deck(rng), [KINDS.N2A]: new Deck(rng) };
+    this.decks = directions.map((d) => new Deck({ size: d.cards.length, rng }));
 
     this.score = 0;        // correct answers that were not revealed
     this.answered = 0;     // prompts completed, revealed or not
@@ -138,20 +112,21 @@ export class Round {
   get isRevealed() { return this.currentRevealed; }
 
   next(now = 0) {
-    const kind = this.kinds.length === 1 ? this.kinds[0] : this.kinds[Math.floor(this.rng() * this.kinds.length)];
-    const index = this.decks[kind].draw();
-    this.current = makePrompt(kind, index, this.base);
+    const di = this.directions.length === 1 ? 0 : Math.floor(this.rng() * this.directions.length);
+    const dir = this.directions[di];
+    const card = dir.cards[this.decks[di].draw()];
+    this.current = { dir, card };
     this.currentMisses = 0;
     this.currentRevealed = false;
     this.shownAt = now;
     return this.current;
   }
 
-  _rec(p) {
-    const key = `${p.kind}:${p.index}`;
+  _rec({ dir, card }) {
+    const key = `${dir.id}:${card.key}`;
     let r = this.perKey.get(key);
     if (!r) {
-      r = { key, kind: p.kind, index: p.index, shown: p.shown, answer: p.answer, attempts: 0, misses: 0, revealed: 0, ms: 0 };
+      r = { key, dirId: dir.id, cardKey: card.key, shown: card.shown, answerLabel: answerLabelOf(dir, card), attempts: 0, misses: 0, revealed: 0, ms: 0 };
       this.perKey.set(key, r);
     }
     return r;
@@ -174,11 +149,11 @@ export class Round {
    * a non-empty partial answer counts as wrong instead of pending.
    */
   submit(typed, now = 0, { commit = false } = {}) {
-    const p = this.current;
-    if (!p) throw new Error("call next() before submit()");
-    let verdict = judge(p.answer, typed);
+    const cur = this.current;
+    if (!cur) throw new Error("call next() before submit()");
+    let verdict = judge(cur.card, typed);
     if (commit && verdict === "pending" && typed) verdict = "wrong";
-    const rec = this._rec(p);
+    const rec = this._rec(cur);
 
     if (verdict === "wrong") {
       this._miss(rec);
@@ -195,7 +170,7 @@ export class Round {
         this.bestStreak = Math.max(this.bestStreak, this.streak);
         this.scoredMs += ms;
       }
-      this.history.push({ ...p, ms, misses: this.currentMisses, revealed: this.currentRevealed });
+      this.history.push({ dirId: cur.dir.id, cardKey: cur.card.key, ms, misses: this.currentMisses, revealed: this.currentRevealed });
     }
     return verdict;
   }
@@ -206,10 +181,7 @@ export class Round {
     const denom = this.score + this.misses;
     const accuracy = denom ? this.score / denom : null;
 
-    const rows = [...this.perKey.values()].map((r) => ({
-      ...r,
-      avgMs: r.attempts ? r.ms / r.attempts : null,
-    }));
+    const rows = [...this.perKey.values()].map((r) => ({ ...r, avgMs: r.attempts ? r.ms / r.attempts : null }));
     const slowCut = avgMs ? avgMs * 1.6 : Infinity;
     const trouble = rows
       .filter((r) => r.revealed > 0 || r.misses > 0 || (r.avgMs !== null && r.avgMs > slowCut && r.avgMs > 1500))
@@ -229,8 +201,7 @@ export class Round {
       durationSec,
       elapsedSec,
       endedEarly,
-      base: this.base,
-      directions: directionLabel(this.kinds.includes(KINDS.A2N), this.kinds.includes(KINDS.N2A)),
+      directions: this.directions.map((d) => d.id),
     };
   }
 }
