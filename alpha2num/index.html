@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>alpha2num · sciolyutils</title>
+  <meta name="description" content="Zetamac-style speed drill for Codebusters: convert letters to numbers (A = 0 … Z = 25) and numbers to letters against the clock.">
+  <meta name="theme-color" content="#3b53d9">
+  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Lato:wght@400;700&family=Space+Mono:wght@400;700&display=swap">
+  <link rel="stylesheet" href="/assets/css/base.css">
+  <link rel="stylesheet" href="/assets/css/trainer.css">
+  <script type="module" src="/assets/js/site.js"></script>
+  <script type="module" src="/alpha2num/app.js"></script>
+</head>
+<body>
+  <main id="main">
+    <header class="page-head">
+      <div class="wrap">
+        <p class="crumbs"><a href="/">Home</a> / alpha2num</p>
+        <h1 class="mono">alpha2num</h1>
+        <p class="lead">Letters to numbers and back, against the clock. See <b>Q</b>, type <b>16</b>. See <b>16</b>, type <b>Q</b>. A right answer advances instantly, no Enter needed.</p>
+        <a class="back" href="/">← All applets</a>
+      </div>
+    </header>
+
+    <section class="section-tight">
+      <div class="wrap" style="max-width: 860px;">
+        <div class="trainer" id="trainer">
+
+          <!-- ================= SETUP ================= -->
+          <form id="setup" class="trainer-view" novalidate>
+            <div class="setup-grid">
+              <fieldset class="opt">
+                <legend>Directions</legend>
+                <label class="switch">
+                  <input type="checkbox" id="opt-a2n" name="a2n" checked>
+                  <span class="track" aria-hidden="true"><span class="thumb"></span></span>
+                  <span class="text"><b>Letter → number</b><small>See <span class="ex">Q</span>, type <span class="ex">16</span></small></span>
+                </label>
+                <label class="switch">
+                  <input type="checkbox" id="opt-n2a" name="n2a" checked>
+                  <span class="track" aria-hidden="true"><span class="thumb"></span></span>
+                  <span class="text"><b>Number → letter</b><small>See <span class="ex">16</span>, type <span class="ex">Q</span></small></span>
+                </label>
+                <p class="opt-help" id="dir-help" aria-live="polite">Turn on one or both. With both on, prompts alternate at random.</p>
+              </fieldset>
+
+              <fieldset class="opt">
+                <legend>Numbering</legend>
+                <div class="pills">
+                  <label class="pill"><input type="radio" name="base" value="0" checked><span>A&nbsp;=&nbsp;0 … Z&nbsp;=&nbsp;25</span></label>
+                  <label class="pill"><input type="radio" name="base" value="1"><span>A&nbsp;=&nbsp;1 … Z&nbsp;=&nbsp;26</span></label>
+                </div>
+                <p class="opt-help">Codebusters counts from A = 0 for Affine and Hill. Switch to A = 1 if that is how you count.</p>
+              </fieldset>
+
+              <fieldset class="opt">
+                <legend>Duration</legend>
+                <div class="duration-row">
+                  <button type="button" class="chip" data-seconds="30" aria-pressed="false">30s</button>
+                  <button type="button" class="chip" data-seconds="60" aria-pressed="true">60s</button>
+                  <button type="button" class="chip" data-seconds="90" aria-pressed="false">90s</button>
+                  <button type="button" class="chip" data-seconds="120" aria-pressed="false">120s</button>
+                  <button type="button" class="chip" data-seconds="180" aria-pressed="false">180s</button>
+                  <label class="num-field">
+                    <span class="visually-hidden">Custom duration in seconds</span>
+                    <input type="number" id="opt-seconds" name="seconds" min="5" max="3600" step="1" value="60" inputmode="numeric">
+                    <span aria-hidden="true">seconds</span>
+                  </label>
+                </div>
+                <p class="opt-help">Zetamac's default is 120. Anything from 5 to 3600 seconds works.</p>
+              </fieldset>
+
+              <fieldset class="opt">
+                <legend>Extras</legend>
+                <label class="switch">
+                  <input type="checkbox" id="opt-strip" name="strip">
+                  <span class="track" aria-hidden="true"><span class="thumb"></span></span>
+                  <span class="text"><b>Show the A–Z strip</b><small>Training wheels: keep the whole letter/number table on screen during the round.</small></span>
+                </label>
+                <p class="opt-help">After three misses on one prompt the answer is revealed so you can move on; it does not score.</p>
+              </fieldset>
+            </div>
+
+            <div class="start-row">
+              <button type="submit" class="btn btn-primary btn-lg" id="start">Start</button>
+              <p class="meta"><span id="pb-line">…</span><br><kbd>Enter</kbd> starts · <kbd>Esc</kbd> ends a round early</p>
+            </div>
+          </form>
+
+          <!-- ================= PLAY ================= -->
+          <div id="play" class="trainer-view" hidden>
+            <div class="hud">
+              <div class="stat" id="time-stat"><span class="k">Seconds left</span><span class="v" id="time" role="timer" aria-live="off">60</span></div>
+              <div class="stat"><span class="k">Score</span><span class="v" id="score">0</span></div>
+              <button type="button" class="btn btn-ghost btn-sm end" id="end">End round</button>
+            </div>
+            <div class="progress" id="progress" aria-hidden="true"><span id="progress-bar"></span></div>
+
+            <div class="stage" id="stage">
+              <span class="stage-kicker" id="kicker">Letter → number</span>
+              <div class="tile" id="tile" aria-live="polite" aria-atomic="true">
+                <span id="tile-text" aria-hidden="true">Q</span>
+                <span class="visually-hidden" id="tile-sr"></span>
+              </div>
+              <div class="answer-wrap">
+                <input class="tile-input" id="answer" type="text" maxlength="2" aria-label="Your answer"
+                       autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" enterkeyhint="done">
+              </div>
+              <p class="reveal" id="reveal" aria-live="polite"></p>
+              <p class="stage-hint">Right answers advance on their own. Wrong ones clear so you can retype.</p>
+            </div>
+
+            <div class="ref-strip" id="strip" hidden aria-label="Letter and number reference"></div>
+          </div>
+
+          <!-- ================= DONE ================= -->
+          <div id="done" class="trainer-view" hidden>
+            <div class="result-hero">
+              <span class="eyebrow" id="done-eyebrow">Time!</span>
+              <h2 class="visually-hidden" id="done-heading" tabindex="-1">Round over</h2>
+              <div class="big" id="done-score">0</div>
+              <p class="sub" id="done-sub"></p>
+              <p class="pb" id="done-pb"></p>
+            </div>
+            <div class="stat-grid" id="done-stats"></div>
+            <div class="trouble" id="trouble"></div>
+            <div class="done-actions">
+              <button type="button" class="btn btn-primary" id="again">Play again</button>
+              <button type="button" class="btn btn-ghost" id="settings">Change settings</button>
+              <span class="spacer"></span>
+              <button type="button" class="btn btn-ghost btn-sm" id="copy">Copy summary</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="notes">
+          <div class="card">
+            <h3>Why drill this?</h3>
+            <p>Affine, Hill and every mod-26 step lean on instant letter ↔ number recall. Every second spent counting on your fingers is a second not spent solving.</p>
+          </div>
+          <div class="card">
+            <h3>How to get fast</h3>
+            <ul>
+              <li>Anchor the landmarks first: A0 · E4 · J9 · O14 · T19 · Z25.</li>
+              <li>Run the strip for a day, then turn it off.</li>
+              <li>Do one direction until it is clean, then mix.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>For coaches</h3>
+            <p>Link a preset round: <code>/alpha2num/?dir=a2n&amp;t=60</code> (<code>dir</code> is <code>a2n</code>, <code>n2a</code> or <code>both</code>; add <code>base=1</code> for A = 1). Students can paste "Copy summary" into your chat.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

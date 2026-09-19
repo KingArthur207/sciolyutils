@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>sciolyutils · Science Olympiad training tools</title>
+  <meta name="description" content="Small, timed drill applets for Science Olympiad. Codebusters training first: letter ↔ number conversion and more to come.">
+  <meta name="theme-color" content="#3b53d9">
+  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Lato:wght@400;700&family=Space+Mono:wght@400;700&display=swap">
+  <link rel="stylesheet" href="/assets/css/base.css">
+  <script type="module" src="/assets/js/site.js"></script>
+  <style>
+    /* ---- home-only styles ---- */
+    .hero { position: relative; overflow: hidden; background: var(--indigo); color: #fff; text-align: center; }
+    .hero-circle {
+      position: absolute; top: 0; left: 55vw; width: 75vw; height: 75vw; max-height: 140vh;
+      background: #201f56; opacity: .1; border-radius: 100%; transform: translateY(-50%); pointer-events: none;
+    }
+    .hero-inner { position: relative; padding-block: clamp(3.2rem, 9vw, 6.2rem) clamp(4.2rem, 8vw, 6.4rem); max-width: 820px; }
+    .hero-kicker { font-family: var(--font-display); font-weight: 600; font-size: .95rem; color: rgba(255,255,255,.8); margin: 0 0 1rem; }
+    .hero h1 { color: #fff; font-size: clamp(30px, 5vw, 50px); line-height: 1.15; margin: 0 0 1.2rem; }
+    .hero-lead { font-size: clamp(1.02rem, 1.8vw, 1.15rem); color: rgba(255,255,255,.88); max-width: 56ch; margin: 0 auto 2.2rem; }
+    .hero-cta { display: flex; flex-wrap: wrap; gap: .9rem; justify-content: center; }
+    .hero-cta .btn-wide { width: min(100%, 420px); padding-block: .7rem; font-size: 1.05rem; }
+    .btn .arrow.down { display: inline-block; }
+    .btn:hover .arrow.down { transform: translateY(3px); }
+    .hero-notch {
+      position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 60px; height: 30px; background: #fff; border-top-left-radius: 30px; border-top-right-radius: 30px;
+    }
+    /* a strip of cipher cells decorating the hero: letters over numbers, animated slowly */
+    .hero-cells { display: flex; justify-content: center; gap: 6px; margin: 0 auto 2rem; flex-wrap: wrap; max-width: 560px; }
+    .hero-cells .col { display: flex; flex-direction: column; gap: 4px; }
+    .hero-cells .c {
+      width: 34px; height: 34px; border-radius: 8px; display: grid; place-items: center;
+      font-family: var(--font-mono); font-weight: 700; font-size: .95rem;
+    }
+    .hero-cells .c.l { background: var(--night); color: #eef0ff; }
+    .hero-cells .c.n { background: #fff; color: var(--ink); }
+    .hero-cells .col.hit .c.n { background: var(--teal); color: #fff; }
+    .hero-cells .col { animation: cell-in .5s ease both; }
+    .hero-cells .col:nth-child(n)  { animation-delay: calc(var(--i, 0) * 60ms); }
+    @keyframes cell-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    @media (max-width: 480px) {
+      .hero-cells { gap: 4px; }
+      .hero-cells .col { gap: 3px; }
+      .hero-cells .c { width: 26px; height: 26px; font-size: .76rem; border-radius: 6px; }
+    }
+
+    .steps { counter-reset: step; }
+    .steps .card { position: relative; padding-top: 1.9rem; }
+    .steps .card::before {
+      counter-increment: step; content: counter(step);
+      position: absolute; top: -16px; left: 1.4rem; width: 34px; height: 34px; border-radius: 50%;
+      display: grid; place-items: center; background: var(--teal); color: #fff;
+      font-family: var(--font-display); font-weight: 700; font-size: .95rem;
+    }
+    .steps h3 { margin: 0 0 .35rem; }
+    .steps p { color: var(--muted); margin: 0; }
+
+    .cta-teal { background: var(--teal); color: #fff; text-align: center; }
+    .cta-teal h2 { color: #fff; }
+    .cta-teal p { color: rgba(255,255,255,.92); max-width: 52ch; margin: 0 auto 1.8rem; }
+  </style>
+</head>
+<body>
+  <main id="main">
+
+    <!-- ============ HERO ============ -->
+    <section class="hero">
+      <div class="hero-circle" aria-hidden="true"></div>
+      <div class="wrap hero-inner">
+        <p class="hero-kicker">Science Olympiad</p>
+        <h1>Train the intrinsics.</h1>
+        <p class="hero-lead">Small, timed drills for the mechanical skills behind every cipher. No sign-up, works on a phone, keeps your personal bests. Pick an applet and go.</p>
+        <div class="hero-cells" aria-hidden="true">
+          <span class="col" style="--i:0"><span class="c l">C</span><span class="c n">2</span></span>
+          <span class="col hit" style="--i:1"><span class="c l">O</span><span class="c n">14</span></span>
+          <span class="col" style="--i:2"><span class="c l">D</span><span class="c n">3</span></span>
+          <span class="col" style="--i:3"><span class="c l">E</span><span class="c n">4</span></span>
+          <span class="col hit" style="--i:4"><span class="c l">B</span><span class="c n">1</span></span>
+          <span class="col" style="--i:5"><span class="c l">U</span><span class="c n">20</span></span>
+          <span class="col" style="--i:6"><span class="c l">S</span><span class="c n">18</span></span>
+          <span class="col hit" style="--i:7"><span class="c l">T</span><span class="c n">19</span></span>
+          <span class="col" style="--i:8"><span class="c l">E</span><span class="c n">4</span></span>
+          <span class="col" style="--i:9"><span class="c l">R</span><span class="c n">17</span></span>
+          <span class="col hit" style="--i:10"><span class="c l">S</span><span class="c n">18</span></span>
+        </div>
+        <div class="hero-cta">
+          <a class="btn btn-light btn-wide" href="#applets">See all applets <span class="arrow down" aria-hidden="true">↓</span></a>
+        </div>
+      </div>
+      <div class="hero-notch" aria-hidden="true"></div>
+    </section>
+
+    <!-- ============ APPLETS ============ -->
+    <section class="section" id="applets" style="scroll-margin-top: var(--header-h);">
+      <div class="wrap">
+        <div data-applet-groups></div>
+      </div>
+    </section>
+
+    <!-- ============ HOW TO USE ============ -->
+    <section class="section section-alt">
+      <div class="wrap">
+        <span class="eyebrow">How to use it</span>
+        <h2 style="max-width: 24ch;">Two minutes a day beats an hour once a week.</h2>
+        <div class="grid grid-3 steps" style="margin-top: 2.4rem;">
+          <div class="card">
+            <h3>Pick a drill</h3>
+            <p>Start with one direction and the reference strip on. Turn the strip off as soon as it feels like cheating.</p>
+          </div>
+          <div class="card">
+            <h3>Set a timer</h3>
+            <p>Sixty seconds is plenty. Short rounds keep you honest and make it easy to run one before practice starts.</p>
+          </div>
+          <div class="card">
+            <h3>Beat your best</h3>
+            <p>Bests are saved per setting on this device. Check the weak-spot report at the end and drill those letters next.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CTA ============ -->
+    <section class="section cta-teal">
+      <div class="wrap narrow">
+        <h2>Coaching a team?</h2>
+        <p>Link a preset round straight from your practice plan and have students paste their summaries into the chat. New drill ideas are welcome.</p>
+        <a class="btn btn-light" href="/alpha2num/?dir=both&t=60">Try a 60-second round</a>
+      </div>
+    </section>
+
+  </main>
+</body>
+</html>
