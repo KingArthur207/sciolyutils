@@ -111,6 +111,39 @@ letter A maps to. Weak spots group by signed shift ("shift +7", "shift −19"), 
 Engine support: directions may generate cards (`size` + `card(index, context)`) and declare
 `run { length, size, context(i), label, hint }`; cards may set `statKey/statShown/statAnswer`.
 
+## atbash (built)
+
+Mirror the alphabet (A ↔ Z, B ↔ Y …). Atbash is an involution, so the spec exposes a
+**single direction** and no extras; the page has only the Duration fieldset. The controller
+treats the direction switches, strip toggle, pad and strip as optional for this reason:
+a spec may return one direction, and `dir=` URL presets are ignored then.
+
+## The shared word pool (built)
+
+Lives in `assets/data/words/<len>.json` for lengths 3–12, built by `tools/build-words.mjs`
+and committed. Pool = ENABLE words (plurals and conjugations included) that are common in
+**both** Norvig's web counts and the OpenSubtitles counts, minus proper-noun look-alikes and a
+blocklist; sorted most-common-first with a tier digit per word. Each file also carries
+`extra`: rarer ENABLE words that are anagrams of pool words, so a student who types one is
+not told they are wrong. `assets/js/words.js` is the only way pages touch it: `load(lengths)`,
+`words(len)`, `anagrams(letters)`, `extraAnagrams(letters)`, `byPattern("ABCCD", len)`,
+`sample(len, { bias, skip })`. Pattern drills must reuse this module and data, never a
+second list. Never put word data inside an applet folder.
+
+## anagram (built)
+
+Multi-answer drill on the word pool. Settings: **one length** (3–12, chips 4–8 plus a field)
+or **any length 4–12** (weighted toward 4–8), and duration. A set = a scrambled word's letters
+with K = the number of pool anagrams; the kicker says "Find K words". Words lock in the moment
+they are complete (all anagrams share a length, so there is no prefix ambiguity). A letter the
+rack lacks is wrong at once; otherwise nothing is judged until the word is full, so prefixes
+leak no hints. Rarer `extra` anagrams count as bonus words. Enter on an empty box or the Skip
+button gives up a set: the missed words show in coral and the player presses Enter or Next to
+continue. Letter tiles are tappable for phones. Score = words found; results show sets solved,
+skipped, misses, accuracy, average per word, streak, bonus, and the skipped sets with their
+missed words as weak spots. Own engine (`anagram/engine.js`) and controller; shares
+`shell.js`.
+
 ## Quality bar before shipping a change
 
 1. `npm test` passes.

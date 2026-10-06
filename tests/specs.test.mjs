@@ -5,6 +5,7 @@ import { spec as alpha, alphaDirections } from "../alpha2num/spec.js";
 import { spec as bacon, baconCode, baconTable, baconDirections, ALPHA24 } from "../baconian/spec.js";
 import { spec as morse, MORSE, pretty, normalizeMorse, spell, morseDirections } from "../morse/spec.js";
 import { spec as caesar, shiftLetter, caesarDirections, clampN } from "../caesar/spec.js";
+import { spec as atbashSpec, atbash, atbashDirections } from "../atbash/spec.js";
 
 /** every card a direction can produce (fixed list, or generated for every context) */
 const allCards = (d) => {
@@ -19,10 +20,11 @@ for (const [name, s, settings] of [
   ["baconian 24", bacon, { alpha: 24 }], ["baconian 26", bacon, { alpha: 26 }],
   ["morse", morse, { digits: false }], ["morse + digits", morse, { digits: true }],
   ["caesar", caesar, { n: 5, keyAs: "number" }], ["caesar n=1 letter keys", caesar, { n: 1, keyAs: "letter" }],
+  ["atbash", atbashSpec, {}],
 ]) {
   test(`${name}: directions are well-formed and playable`, () => {
     const dirs = s.directions(settings);
-    assert.equal(dirs.length, 2);
+    assert.ok(dirs.length === 1 || dirs.length === 2, "one or two directions");
     for (const d of dirs) {
       assert.ok(d.id && d.label && typeof d.normalize === "function");
       const cards = allCards(d);
@@ -41,9 +43,12 @@ for (const [name, s, settings] of [
     const r = new Round({ directions: dirs });
     for (let i = 0; i < 80; i++) { const { card } = r.next(i); assert.equal(r.submit(card.answer, i + 1), "correct"); }
     assert.equal(r.score, 80);
-    const strip = s.strip(settings);
-    assert.ok(Array.isArray(strip) && strip.length >= 24);
-    assert.ok(s.extrasKey(settings).length > 0 && s.extrasLabel(settings).length > 0);
+    if (s.strip) {
+      const strip = s.strip(settings);
+      assert.ok(Array.isArray(strip) && strip.length >= 24);
+    }
+    if (s.extrasKey) assert.ok(s.extrasKey(settings).length > 0 && s.extrasLabel(settings).length > 0);
+    else assert.equal(s.extrasLabel, undefined, "a spec without extrasKey has no extras label either");
   });
 }
 
@@ -175,4 +180,24 @@ test("caesar: N is clamped and the extras round-trip", () => {
   assert.equal(caesar.urlQuery({ n: 3, keyAs: "number" }), "n=3&key=number");
   assert.equal(caesar.strip({}).length, 26);
   assert.deepEqual(caesar.strip({})[25], { top: "Z", bottom: "25" });
+});
+
+test("atbash: every letter mirrors, and mirroring twice is the identity", () => {
+  assert.equal(atbash("A"), "Z"); assert.equal(atbash("Z"), "A");
+  assert.equal(atbash("B"), "Y"); assert.equal(atbash("Y"), "B");
+  assert.equal(atbash("M"), "N"); assert.equal(atbash("N"), "M");
+  assert.equal(atbash("q"), "J");
+  for (const L of ALPHABET) {
+    assert.equal(atbash(atbash(L)), L);
+    assert.equal(ALPHABET.indexOf(L) + ALPHABET.indexOf(atbash(L)), 25);
+  }
+  assert.throws(() => atbash("1"));
+  const [dir] = atbashDirections();
+  assert.equal(atbashDirections().length, 1);
+  assert.equal(dir.cards.length, 26);
+  assert.deepEqual(dir.cards[16], { key: "Q", shown: "Q", answer: "J" });
+  assert.equal(dir.normalize("j9"), "J");
+  assert.equal(dir.sr(dir.cards[0]), "Letter A. Type its Atbash partner.");
+  assert.equal(atbashSpec.strip, undefined);
+  assert.equal(atbashSpec.extrasKey, undefined);
 });

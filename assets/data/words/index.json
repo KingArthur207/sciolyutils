@@ -1,0 +1,108 @@
+{
+  "builtAt": "2026-10-05",
+  "minLength": 3,
+  "maxLength": 12,
+  "total": 35771,
+  "thresholds": {
+    "floors": {
+      "3": {
+        "web": 2000000,
+        "subs": 1000
+      },
+      "4": {
+        "web": 300000,
+        "subs": 150
+      },
+      "other": {
+        "web": 100000,
+        "subs": 50
+      }
+    },
+    "tierCuts": [
+      10000,
+      3000,
+      1000,
+      300,
+      100
+    ]
+  },
+  "sources": {
+    "enable": {
+      "url": "https://raw.githubusercontent.com/dolph/dictionary/master/enable1.txt",
+      "license": "public domain",
+      "role": "validity (plurals and conjugations included)"
+    },
+    "web": {
+      "url": "https://norvig.com/ngrams/count_1w.txt",
+      "note": "Peter Norvig's unigram counts from the Google Web Trillion Word Corpus",
+      "role": "web frequency"
+    },
+    "subs": {
+      "url": "https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/en/en_full.txt",
+      "license": "CC-BY-SA 4.0 (hermitdave/FrequencyWords, OpenSubtitles 2018)",
+      "role": "speech frequency and tiers"
+    }
+  },
+  "lengths": {
+    "3": {
+      "words": 437,
+      "extra": 129,
+      "multiAnagramSets": 64,
+      "bytes": 2744
+    },
+    "4": {
+      "words": 2079,
+      "extra": 611,
+      "multiAnagramSets": 354,
+      "bytes": 15572
+    },
+    "5": {
+      "words": 4062,
+      "extra": 1246,
+      "multiAnagramSets": 549,
+      "bytes": 35953
+    },
+    "6": {
+      "words": 5496,
+      "extra": 1692,
+      "multiAnagramSets": 499,
+      "bytes": 55855
+    },
+    "7": {
+      "words": 6223,
+      "extra": 1726,
+      "multiAnagramSets": 372,
+      "bytes": 69858
+    },
+    "8": {
+      "words": 5725,
+      "extra": 1178,
+      "multiAnagramSets": 164,
+      "bytes": 67895
+    },
+    "9": {
+      "words": 4782,
+      "extra": 504,
+      "multiAnagramSets": 72,
+      "bytes": 57685
+    },
+    "10": {
+      "words": 3497,
+      "extra": 165,
+      "multiAnagramSets": 36,
+      "bytes": 43823
+    },
+    "11": {
+      "words": 2183,
+      "extra": 77,
+      "multiAnagramSets": 13,
+      "bytes": 29347
+    },
+    "12": {
+      "words": 1287,
+      "extra": 27,
+      "multiAnagramSets": 1,
+      "bytes": 18413
+    }
+  }
+}

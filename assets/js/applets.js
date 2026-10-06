@@ -60,6 +60,28 @@ export const APPLETS = [
     desc: "A shift key is dealt and held for a run of letters; encrypt or decrypt each one. Choose how many letters share a key (five by default, like classic cipher groups).",
     tags: ["Timed", "Encrypt & decrypt", "Key runs", "Weak spots per key"],
   },
+  {
+    slug: "atbash",
+    title: "atbash",
+    group: "Codebusters Training",
+    href: "/atbash/",
+    glyph: "A↔Z",
+    badge: "Speed drill",
+    badgeTone: "teal",
+    desc: "Mirror the alphabet: A ↔ Z, B ↔ Y, C ↔ X. Encoding and decoding are the same move, so it is one direction and one setting: the clock.",
+    tags: ["Timed", "One direction", "Personal bests", "Weak-spot report"],
+  },
+  {
+    slug: "anagram",
+    title: "anagram",
+    group: "Codebusters Training",
+    href: "/anagram/",
+    glyph: "A⇄",
+    badge: "Speed drill",
+    badgeTone: "teal",
+    desc: "Unscramble common English words. Every set asks for all of its anagrams: if the letters make three words, find all three. Pick a word length or mix 4 to 12.",
+    tags: ["Timed", "One length or any", "All the anagrams", "Weak-spot report"],
+  },
 ];
 
 export const FOOTER_LINKS = [

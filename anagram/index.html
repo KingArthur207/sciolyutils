@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>anagram · sciolyutils</title>
+  <meta name="description" content="Timed anagram drill for Codebusters: unscramble common English words and find every anagram of each set. Pick one word length or mix 4 to 12.">
+  <meta name="theme-color" content="#3b53d9">
+  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Lato:wght@400;700&family=Space+Mono:wght@400;700&display=swap">
+  <link rel="stylesheet" href="/assets/css/base.css">
+  <link rel="stylesheet" href="/assets/css/trainer.css">
+  <script type="module" src="/assets/js/site.js"></script>
+  <script type="module" src="/anagram/app.js"></script>
+</head>
+<body>
+  <main id="main">
+    <header class="page-head">
+      <div class="wrap">
+        <p class="crumbs"><a href="/">Home</a> / anagram</p>
+        <h1 class="mono">anagram</h1>
+        <p class="lead">Unscramble common English words against the clock. Each set asks for every anagram of its letters: if <b>TLSAE</b> makes five words, find all five. A word is accepted the moment you finish typing it.</p>
+        <a class="back" href="/">← All applets</a>
+      </div>
+    </header>
+
+    <section class="section-tight">
+      <div class="wrap" style="max-width: 860px;">
+        <div class="trainer" id="trainer">
+
+          <!-- ================= SETUP ================= -->
+          <form id="setup" class="trainer-view" novalidate>
+            <div class="setup-grid">
+              <fieldset class="opt">
+                <legend>Words</legend>
+                <div class="pills">
+                  <label class="pill"><input type="radio" name="mode" value="fixed" checked><span>One length</span></label>
+                  <label class="pill"><input type="radio" name="mode" value="any"><span>Any length · 4 to 12</span></label>
+                </div>
+                <div class="duration-row" id="len-row" style="margin-top: .8rem;">
+                  <button type="button" class="chip" data-field="len" data-value="4" aria-pressed="false">4</button>
+                  <button type="button" class="chip" data-field="len" data-value="5" aria-pressed="true">5</button>
+                  <button type="button" class="chip" data-field="len" data-value="6" aria-pressed="false">6</button>
+                  <button type="button" class="chip" data-field="len" data-value="7" aria-pressed="false">7</button>
+                  <button type="button" class="chip" data-field="len" data-value="8" aria-pressed="false">8</button>
+                  <label class="num-field">
+                    <span class="visually-hidden">Word length</span>
+                    <input type="number" id="opt-len" name="len" min="3" max="12" step="1" value="5" inputmode="numeric">
+                    <span aria-hidden="true">letters</span>
+                  </label>
+                </div>
+                <p class="opt-help" id="pool-line" aria-live="polite">Loading words…</p>
+              </fieldset>
+
+              <fieldset class="opt">
+                <legend>Duration</legend>
+                <div class="duration-row">
+                  <button type="button" class="chip" data-field="seconds" data-value="60" aria-pressed="true">60s</button>
+                  <button type="button" class="chip" data-field="seconds" data-value="120" aria-pressed="false">120s</button>
+                  <button type="button" class="chip" data-field="seconds" data-value="180" aria-pressed="false">180s</button>
+                  <button type="button" class="chip" data-field="seconds" data-value="300" aria-pressed="false">300s</button>
+                  <label class="num-field">
+                    <span class="visually-hidden">Custom duration in seconds</span>
+                    <input type="number" id="opt-seconds" name="seconds" min="5" max="3600" step="1" value="60" inputmode="numeric">
+                    <span aria-hidden="true">seconds</span>
+                  </label>
+                </div>
+                <p class="opt-help">Words come from a pool of common English words, plurals and conjugations included, ranked by how often they appear in real text. Rarer dictionary anagrams you happen to know still count, as bonus words.</p>
+              </fieldset>
+            </div>
+
+            <div class="start-row">
+              <button type="submit" class="btn btn-primary btn-lg" id="start">Start</button>
+              <p class="meta"><span id="pb-line">…</span><br><kbd>Enter</kbd> starts · <kbd>Enter</kbd> on an empty box skips a set · <kbd>Esc</kbd> ends early</p>
+            </div>
+          </form>
+
+          <!-- ================= PLAY ================= -->
+          <div id="play" class="trainer-view" hidden>
+            <div class="hud">
+              <div class="stat" id="time-stat"><span class="k">Seconds left</span><span class="v" id="time" role="timer" aria-live="off">60</span></div>
+              <div class="stat"><span class="k">Words found</span><span class="v" id="score">0</span></div>
+              <button type="button" class="btn btn-ghost btn-sm end" id="skip">Skip set</button>
+              <button type="button" class="btn btn-ghost btn-sm end" id="end">End round</button>
+            </div>
+            <div class="progress" id="progress" aria-hidden="true"><span id="progress-bar"></span></div>
+
+            <div class="stage stage-anagram" id="stage">
+              <span class="stage-kicker" id="kicker">Find 1 word</span>
+              <div class="rack" id="rack" aria-hidden="true"></div>
+              <p class="visually-hidden" id="rack-sr" aria-live="polite"></p>
+              <div class="answer-wrap">
+                <input class="tile-input is-word" id="answer" type="text" maxlength="12" aria-label="Type a word made from the letters"
+                       autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go">
+                <button type="button" class="btn btn-primary btn-sm next-set" id="next" hidden>Next set →</button>
+              </div>
+              <ul class="slots" id="slots" aria-label="Words in this set"></ul>
+              <p class="last-set" id="last" aria-live="polite"></p>
+              <p class="stage-hint">Type a word or tap the letters. Right words lock in on their own. <kbd>Enter</kbd> on an empty box skips the set.</p>
+            </div>
+          </div>
+
+          <!-- ================= DONE ================= -->
+          <div id="done" class="trainer-view" hidden>
+            <div class="result-hero">
+              <span class="eyebrow" id="done-eyebrow">Time!</span>
+              <h2 class="visually-hidden" id="done-heading" tabindex="-1">Round over</h2>
+              <div class="big" id="done-score">0</div>
+              <p class="sub" id="done-sub"></p>
+              <p class="pb" id="done-pb"></p>
+            </div>
+            <div class="stat-grid" id="done-stats"></div>
+            <div class="trouble" id="trouble"></div>
+            <div class="done-actions">
+              <button type="button" class="btn btn-primary" id="again">Play again</button>
+              <button type="button" class="btn btn-ghost" id="settings">Change settings</button>
+              <span class="spacer"></span>
+              <button type="button" class="btn btn-ghost btn-sm" id="copy">Copy summary</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="notes">
+          <div class="card">
+            <h3>Why drill this?</h3>
+            <p>Patristocrats hide the word breaks, columnar and other transpositions scramble the letters outright, and every cryptogram ends with "what word has these letters?". Fast anagramming is the difference between a guess and a solve.</p>
+          </div>
+          <div class="card">
+            <h3>How to get fast</h3>
+            <ul>
+              <li>Pull the vowels out first, then try common endings: -ED, -ER, -ING, -S.</li>
+              <li>Look for pairs that travel together: TH, CH, ST, QU.</li>
+              <li>When a set wants several words, the first one you find usually hints at the rest: swap two letters.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>For coaches</h3>
+            <p>Link a preset round: <code>/anagram/?len=6&amp;t=120</code> or <code>/anagram/?mode=any&amp;t=180</code>. The same word pool powers the upcoming pattern-matching drills, so scores stay comparable across tools.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

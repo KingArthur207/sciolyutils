@@ -13,6 +13,31 @@ event (Codebusters first). Static site, no build step, hosted on Vercel.
   dots and dashes on phones; digits optional.
 - **caesar** (`/caesar/`): a shift key (1–25) is dealt and held for N consecutive letters
   (5 by default); encrypt or decrypt each letter. Weak spots are reported per key.
+- **atbash** (`/atbash/`): mirror the alphabet (A ↔ Z, B ↔ Y …). One direction, the timer
+  is the only setting.
+- **anagram** (`/anagram/`): unscramble common English words; each set asks for every
+  anagram of its letters. One word length (3–12) or any length from 4 to 12.
+
+## The word pool
+
+`assets/data/words/<length>.json` holds the shared English word pool, one file per word
+length (3–12), each sorted most-common-first with a commonness tier per word plus the rarer
+dictionary anagrams of pool words. It is built by `tools/build-words.mjs` from three public
+sources and committed, so the site stays static:
+
+- **ENABLE** (public domain) says what is a word, plurals and conjugations included.
+- **Norvig's Google web counts** and **OpenSubtitles counts** (hermitdave/FrequencyWords)
+  say how common it is. A word must clear a floor in both, so web-only noise and
+  speech-only noise both drop out; obscure dictionary entries that only look common because
+  they are also names are excluded by a capitalization check, and a short blocklist removes
+  words unsuitable for students.
+
+`assets/js/words.js` loads only the lengths a page needs and answers "words of length n",
+"anagrams of these letters", and "words with pattern ABCCD" from in-memory indexes. Rebuild:
+
+```bash
+node tools/build-words.mjs
+```
 
 Every drill has the same shell: settings, timer, live score, instant advance on a right
 answer, personal bests per setting, a weak-spot report, and a shareable summary.
@@ -44,7 +69,7 @@ with Node's built-in test runner.
 ```
 index.html                 Hub: hero + applet groups (rendered from the registry)
 404.html                   Themed not-found page (Vercel picks it up automatically)
-alpha2num/ baconian/ morse/ caesar/
+alpha2num/ baconian/ morse/ caesar/ atbash/ anagram/
   index.html               The applet page (settings → play → results)
   spec.js                  What this drill converts: directions, cards, extras (pure, tested)
   app.js                   Two lines: createDrill(spec)
@@ -54,10 +79,14 @@ assets/
   js/applets.js            <- applet registry: single source of truth for nav + hub + footer
   js/site.js               Renders header, footer and the hub groups on every page
   js/drill-engine.js       Shared pure game logic: decks, prefix judging, scoring, weak spots
-  js/drill.js              Shared page controller: settings, timer, views, bests, presets
+  js/drill.js              Shared page controller for one-answer drills
+  js/shell.js              Helpers every controller shares: storage, bests, timer, results bits
+  js/words.js              Word pool loader + indexes (by length, anagram, letter pattern)
+  data/words/              The word pool, one JSON per length (built, committed)
   img/                     Favicon and brand mark
 tests/                     node:test unit tests
 tools/serve.mjs            Tiny static dev server (mirrors Vercel: index.html, 404.html)
+tools/build-words.mjs      Rebuilds assets/data/words from the public sources
 PROMPT.md                  The build brief: goals, theme rules, conventions, applet specs
 vercel.json                Vercel config (static, trailing slashes, asset caching)
 ```
