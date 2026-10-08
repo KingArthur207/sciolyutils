@@ -105,7 +105,7 @@ const soonCardHTML = () => `
     <div class="card applet-card soon">
       <span class="glyph" aria-hidden="true">?</span>
       <h3>More drills on the way</h3>
-      <p>Have one in mind? <a href="mailto:${esc(SITE.email)}?subject=sciolyutils%20applet%20idea">Suggest it.</a></p>
+      <p>Have one in mind? <a href="mailto:${esc(SITE.email)}?subject=sciolyutils%20applet%20idea">Suggest a feature.</a></p>
     </div>`;
 
 function renderAppletGroups() {

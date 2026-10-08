@@ -2,6 +2,7 @@
   "name": "sciolyutils",
   "version": "1.0.0",
   "private": true,
+  "author": "Arthur Armaing",
   "type": "module",
   "description": "Codebusters intrinsics trainers for Science Olympiad: a hub of small, timed drill applets. Static site, no build step.",
   "scripts": {
