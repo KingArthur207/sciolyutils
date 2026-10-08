@@ -80,7 +80,7 @@ function renderFooter() {
     </div>
     <div class="wrap footer-bottom">
       <span>Built by ${esc(SITE.author)} · ${SITE.year}</span>
-      <span>Theme adapted from <a href="https://code.sciovirtual.org/">code.sciovirtual.org</a></span>
+      <span>Made for Science Olympiad students and coaches</span>
     </div>`;
   document.body.appendChild(footer);
 }

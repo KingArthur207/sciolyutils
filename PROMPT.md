@@ -30,7 +30,7 @@ should be able to open it on a phone or laptop, pick a drill, and be practising 
   DOM controller `assets/js/drill.js` stays the only place that touches the page.
 - Storage is best-effort `localStorage` (guarded; private mode must not break anything).
 
-## Theme (from code.sciovirtual.org)
+## Theme
 
 Tokens live in `assets/css/base.css`; never hard-code colours in a page.
 
@@ -143,6 +143,21 @@ continue. Letter tiles are tappable for phones. Score = words found; results sho
 skipped, misses, accuracy, average per word, streak, bonus, and the skipped sets with their
 missed words as weak spots. Own engine (`anagram/engine.js`) and controller; shares
 `shell.js`.
+
+## templar and sga (built) — Division A symbol drills
+
+For the elementary event (DaVinci Decoder, 4th–6th graders). Both come from
+`assets/js/symbols.js` (`makeSymbolSpec`) on the shared drill engine. Symbols are rendered
+with the cipher fonts from toebes/ciphers (`assets/fonts/`, BSD-3): a card's `shown` is the
+plain letter and a font class turns it into the symbol, so the glyphs are exactly the
+Codebusters ones. Pages gate Start on `document.fonts.load` and hide glyph elements until
+`html.glyphs-ready`, so the plain letter never flashes as a hint; `font-display: block`.
+Directions: **Symbol → letter** (type; what the test asks) and **Letter → symbol** (tap the
+palette; keyboard ignored, `inputmode="none"`). Extras: **All letters** or **12 most common**
+(E T A O I N S R H L D C, the resource-sheet order), table toggle. Knights Templar has 25
+symbols with I/J shared (either letter accepted; J's symbol is I's); N is the centre X. The
+hub lists them with the other applets under "Codebusters Training". Still open from the same
+coach request: Vigenère (the maths), Pigpen, Tap Code.
 
 ## Quality bar before shipping a change
 

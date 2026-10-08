@@ -18,6 +18,16 @@ event (Codebusters first). Static site, no build step, hosted on Vercel.
 - **anagram** (`/anagram/`): unscramble common English words; each set asks for every
   anagram of its letters. One word length (3–12) or any length from 4 to 12.
 
+Division A (DaVinci Decoder):
+
+- **templar** (`/templar/`): the Knights Templar cipher symbols. Read a symbol and type its
+  letter, or tap the symbol for a letter. I and J share a symbol.
+- **sga** (`/sga/`): the Standard Galactic Alphabet, same two directions.
+
+Both render the symbols with the cipher fonts from the open-source
+[toebes/ciphers](https://github.com/toebes/ciphers) Codebusters tools (BSD-3, see
+`assets/fonts/LICENSE-toebes-ciphers.txt`), so they match the test exactly.
+
 ## The word pool
 
 `assets/data/words/<length>.json` holds the shared English word pool, one file per word
@@ -41,9 +51,6 @@ node tools/build-words.mjs
 
 Every drill has the same shell: settings, timer, live score, instant advance on a right
 answer, personal bests per setting, a weak-spot report, and a shareable summary.
-
-The look matches [code.sciovirtual.org](https://code.sciovirtual.org/) (flat `#3b53d9`
-blue, `#44cab2` teal, `#202525` footer, Poppins + Lato + Space Mono, pill buttons).
 
 ## Run it locally
 
@@ -69,7 +76,7 @@ with Node's built-in test runner.
 ```
 index.html                 Hub: hero + applet groups (rendered from the registry)
 404.html                   Themed not-found page (Vercel picks it up automatically)
-alpha2num/ baconian/ morse/ caesar/ atbash/ anagram/
+alpha2num/ baconian/ morse/ caesar/ atbash/ anagram/ templar/ sga/
   index.html               The applet page (settings → play → results)
   spec.js                  What this drill converts: directions, cards, extras (pure, tested)
   app.js                   Two lines: createDrill(spec)
@@ -82,6 +89,9 @@ assets/
   js/drill.js              Shared page controller for one-answer drills
   js/shell.js              Helpers every controller shares: storage, bests, timer, results bits
   js/words.js              Word pool loader + indexes (by length, anagram, letter pattern)
+  js/symbols.js            Spec factory for symbol-alphabet drills (templar, sga)
+  css/glyphs.css           Cipher font faces, symbol tiles, the symbol palette
+  fonts/                   Knights Templar + Standard Galactic Alphabet fonts (toebes/ciphers, BSD-3)
   data/words/              The word pool, one JSON per length (built, committed)
   img/                     Favicon and brand mark
 tests/                     node:test unit tests

@@ -82,13 +82,34 @@ export const APPLETS = [
     desc: "Unscramble common English words. Every set asks for all of its anagrams: if the letters make three words, find all three. Pick a word length or mix 4 to 12.",
     tags: ["Timed", "One length or any", "All the anagrams", "Weak-spot report"],
   },
+  {
+    slug: "templar",
+    title: "templar",
+    group: "Codebusters Training",
+    href: "/templar/",
+    glyph: "✠",
+    badge: "Symbols",
+    badgeTone: "gold",
+    desc: "The Knights Templar cipher from the Division A resource sheet. Read a Maltese-cross symbol and type its letter, or tap the symbol for a letter. I and J share one.",
+    tags: ["Timed", "Read & write", "12 most common letters", "Table on demand"],
+  },
+  {
+    slug: "sga",
+    title: "sga",
+    group: "Codebusters Training",
+    href: "/sga/",
+    glyph: "⍑",
+    badge: "Symbols",
+    badgeTone: "gold",
+    desc: "The Standard Galactic Alphabet from the Division A resource sheet. Read a symbol and type its letter, or tap the symbol for a letter, until the table is in your head.",
+    tags: ["Timed", "Read & write", "12 most common letters", "Table on demand"],
+  },
 ];
 
 export const FOOTER_LINKS = [
   {
     title: "Elsewhere",
     links: [
-      { label: "ScioVirtual Codebusters", href: "https://code.sciovirtual.org/" },
       { label: "ScioVirtual", href: "https://www.sciovirtual.org/" },
       { label: "Science Olympiad", href: "https://www.soinc.org/" },
     ],

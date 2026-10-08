@@ -1,0 +1,42 @@
+/* =========================================================================
+   glyphs.css — cipher symbol fonts and the pieces that use them
+   (symbol tiles, the symbol palette, the symbol/letter reference strip).
+   Fonts: toebes/ciphers, BSD-3 (assets/fonts/LICENSE-toebes-ciphers.txt).
+   ========================================================================= */
+@font-face {
+  font-family: "KnightsTemplar";
+  src: url("/assets/fonts/KnightsTemplar.woff2") format("woff2"), url("/assets/fonts/KnightsTemplar.woff") format("woff");
+  font-display: block;
+}
+@font-face {
+  font-family: "StandardGalacticAlphabetSO";
+  src: url("/assets/fonts/StandardGalacticAlphabetSO.woff2") format("woff2"), url("/assets/fonts/StandardGalacticAlphabetSO.woff") format("woff");
+  font-display: block;
+}
+
+.font-templar, .font-templar .ref-cell.l, .font-templar #tile-text, .font-templar.tile-input, .font-templar button { font-family: "KnightsTemplar", sans-serif !important; font-weight: 400; text-transform: uppercase; }
+.font-sga, .font-sga .ref-cell.l, .font-sga #tile-text, .font-sga.tile-input, .font-sga button { font-family: "StandardGalacticAlphabetSO", sans-serif !important; font-weight: 400; text-transform: uppercase; }
+
+/* until the font is in, symbol text stays invisible so the plain letter never flashes */
+html:not(.glyphs-ready) .tile.is-glyph, html:not(.glyphs-ready) .pad-glyphs, html:not(.glyphs-ready) .glyph-strip { visibility: hidden; }
+
+/* the symbol tile: a touch smaller than a letter so wide glyphs fit */
+.tile.is-glyph { font-size: clamp(3rem, 11vw, 4.4rem); letter-spacing: 0; }
+.tile-input.is-glyph { font-size: 2.4rem; }
+.ex.font-templar, .ex.font-sga { font-size: 1.1em; padding: 0 .3em; }
+
+/* the symbol palette replaces the keyboard for letter → symbol */
+.pad.pad-glyphs {
+  display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: .4rem;
+  width: min(100%, 460px); margin: 1rem auto 0;
+}
+.pad.pad-glyphs button { min-width: 0; width: 100%; height: 54px; padding: 0; font-size: 1.6rem; border-radius: 12px; }
+.pad.pad-glyphs .bksp { display: none; }
+@media (max-width: 480px) {
+  .pad.pad-glyphs { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .35rem; }
+  .pad.pad-glyphs button { height: 50px; font-size: 1.45rem; }
+}
+
+/* reference strip: symbol over letter */
+.glyph-strip .ref-cell.l { min-width: 36px; height: 36px; font-size: 1.25rem; }
+.glyph-strip .ref-col { gap: 4px; }
