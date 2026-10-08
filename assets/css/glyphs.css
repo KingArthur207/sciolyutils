@@ -9,12 +9,18 @@
   font-display: block;
 }
 @font-face {
+  font-family: "PigpenCipher";
+  src: url("/assets/fonts/PigpenCipher.woff2") format("woff2"), url("/assets/fonts/PigpenCipher.woff") format("woff");
+  font-display: block;
+}
+@font-face {
   font-family: "StandardGalacticAlphabetSO";
   src: url("/assets/fonts/StandardGalacticAlphabetSO.woff2") format("woff2"), url("/assets/fonts/StandardGalacticAlphabetSO.woff") format("woff");
   font-display: block;
 }
 
 .font-templar, .font-templar .ref-cell.l, .font-templar #tile-text, .font-templar.tile-input, .font-templar button { font-family: "KnightsTemplar", sans-serif !important; font-weight: 400; text-transform: uppercase; }
+.font-pigpen, .font-pigpen .ref-cell.l, .font-pigpen #tile-text, .font-pigpen.tile-input, .font-pigpen button { font-family: "PigpenCipher", sans-serif !important; font-weight: 400; text-transform: uppercase; }
 .font-sga, .font-sga .ref-cell.l, .font-sga #tile-text, .font-sga.tile-input, .font-sga button { font-family: "StandardGalacticAlphabetSO", sans-serif !important; font-weight: 400; text-transform: uppercase; }
 
 /* until the font is in, symbol text stays invisible so the plain letter never flashes */
@@ -40,3 +46,15 @@ html:not(.glyphs-ready) .tile.is-glyph, html:not(.glyphs-ready) .pad-glyphs, htm
 /* reference strip: symbol over letter */
 .glyph-strip .ref-cell.l { min-width: 36px; height: 36px; font-size: 1.25rem; }
 .glyph-strip .ref-col { gap: 4px; }
+
+/* tap code: dot groups in the tile and answer box, and the 5 × 5 table */
+.tile.is-taps { font-size: clamp(1.6rem, 5.5vw, 2.3rem); letter-spacing: .04em; word-spacing: .5em; line-height: 1; }
+.tile.is-tapnums { font-size: clamp(2.2rem, 8vw, 3.2rem); letter-spacing: .02em; }
+.tile-input.is-taps { font-size: 1.5rem; letter-spacing: .04em; word-spacing: .5em; }
+.ref-strip.tap-grid { display: grid; grid-template-columns: repeat(5, auto); justify-content: center; gap: 6px 10px; }
+.ref-strip.tap-grid .ref-col { gap: 2px; }
+.ref-strip.tap-grid .ref-cell.l { min-width: 44px; }
+.ref-strip.tap-grid .ref-cell.n { min-width: 44px; font-size: .72rem; letter-spacing: .02em; }
+.pad.pad-taps { flex-wrap: wrap; max-width: 100%; }
+.pad.pad-taps button { min-width: 56px; padding: 0 .6rem; }
+@media (max-width: 480px) { .pad.pad-taps { gap: .4rem; } .pad.pad-taps button { min-width: 46px; height: 48px; font-size: 1.4rem; } }

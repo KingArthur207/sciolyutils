@@ -156,8 +156,20 @@ Directions: **Symbol → letter** (type; what the test asks) and **Letter → sy
 palette; keyboard ignored, `inputmode="none"`). Extras: **All letters** or **12 most common**
 (E T A O I N S R H L D C, the resource-sheet order), table toggle. Knights Templar has 25
 symbols with I/J shared (either letter accepted; J's symbol is I's); N is the centre X. The
-hub lists them with the other applets under "Codebusters Training". Still open from the same
-coach request: Vigenère (the maths), Pigpen, Tap Code.
+hub groups applets by event division: **Division B & C** (alpha2num … anagram) and
+**Division A ciphers** (pigpen, tapcode, templar, sga). Still open from the same coach
+request: Vigenère (the maths).
+
+## pigpen and tapcode (built) — more Division A
+
+**pigpen** is the symbol factory again with the standard table (grid A–I, dotted grid J–R,
+X S T U V top/left/right/bottom, dotted X W X Y Z) rendered with the Pigpen Cipher font
+(SIL OFL). **tapcode** has its own spec: the 5 × 5 table A–E / F–J / L–P / Q–U / V–Z with K in
+C's cell (never given on the test). Read direction shows the taps the way tests print them,
+dot groups `●● ●●●` (row, pause, column) or optionally numbers `2 · 3`; type the letter, C or
+K both accepted for `● ●●●`. Write direction: see a letter, enter row then column (digits 1–5,
+a 1–5 pad for phones); the box echoes dots. The tap map is asserted against the toebes
+generator's table in tests. Table toggle renders a real 5 × 5 grid.
 
 ## Quality bar before shipping a change
 

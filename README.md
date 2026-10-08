@@ -18,15 +18,20 @@ event (Codebusters first). Static site, no build step, hosted on Vercel.
 - **anagram** (`/anagram/`): unscramble common English words; each set asks for every
   anagram of its letters. One word length (3–12) or any length from 4 to 12.
 
-Division A (DaVinci Decoder):
+The hub lists those under **Division B & C**. Under **Division A ciphers** (DaVinci Decoder):
 
-- **templar** (`/templar/`): the Knights Templar cipher symbols. Read a symbol and type its
-  letter, or tap the symbol for a letter. I and J share a symbol.
-- **sga** (`/sga/`): the Standard Galactic Alphabet, same two directions.
+- **pigpen** (`/pigpen/`): the standard Pigpen (Masonic) table. Read a symbol and type its
+  letter, or tap the symbol for a letter.
+- **tapcode** (`/tapcode/`): Tap Code on the 5 × 5 table with C/K sharing a cell. Count the
+  row and column taps (shown as dots, like the test, or as numbers) and type the letter, or
+  enter the row and column for a letter.
+- **templar** (`/templar/`): the Knights Templar cipher symbols. I and J share a symbol.
+- **sga** (`/sga/`): the Standard Galactic Alphabet.
 
-Both render the symbols with the cipher fonts from the open-source
+Templar and SGA render their symbols with the cipher fonts from the open-source
 [toebes/ciphers](https://github.com/toebes/ciphers) Codebusters tools (BSD-3, see
-`assets/fonts/LICENSE-toebes-ciphers.txt`), so they match the test exactly.
+`assets/fonts/LICENSE-toebes-ciphers.txt`); Pigpen uses the Pigpen Cipher font (SIL OFL,
+`assets/fonts/LICENSE-PigpenCipher-OFL.txt`). Tap groups follow the toebes test generator.
 
 ## The word pool
 
@@ -76,7 +81,7 @@ with Node's built-in test runner.
 ```
 index.html                 Hub: hero + applet groups (rendered from the registry)
 404.html                   Themed not-found page (Vercel picks it up automatically)
-alpha2num/ baconian/ morse/ caesar/ atbash/ anagram/ templar/ sga/
+alpha2num/ … anagram/ pigpen/ tapcode/ templar/ sga/
   index.html               The applet page (settings → play → results)
   spec.js                  What this drill converts: directions, cards, extras (pure, tested)
   app.js                   Two lines: createDrill(spec)
@@ -91,7 +96,7 @@ assets/
   js/words.js              Word pool loader + indexes (by length, anagram, letter pattern)
   js/symbols.js            Spec factory for symbol-alphabet drills (templar, sga)
   css/glyphs.css           Cipher font faces, symbol tiles, the symbol palette
-  fonts/                   Knights Templar + Standard Galactic Alphabet fonts (toebes/ciphers, BSD-3)
+  fonts/                   Cipher fonts: Knights Templar + SGA (toebes/ciphers, BSD-3), Pigpen (SIL OFL)
   data/words/              The word pool, one JSON per length (built, committed)
   img/                     Favicon and brand mark
 tests/                     node:test unit tests
