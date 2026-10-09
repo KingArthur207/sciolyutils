@@ -69,52 +69,51 @@ html:not(.glyphs-ready) .tile.is-glyph, html:not(.glyphs-ready) .pad-glyphs, htm
 .tabula tbody tr:nth-child(even) td { background: var(--lavender); }
 @media (max-width: 480px) { .tabula { font-size: .58rem; } }
 
-/* vigenère: the key and the letter are two matching cells side by side (gold dashed key
-   cell, dark cipher cell, like a worksheet), a compact hint pill under them, the answer box
-   spanning both, and a smaller table above so most of it stays in view */
-.vig .stage {
-  display: grid; grid-template-columns: auto auto; column-gap: .9rem; row-gap: 0;
-  grid-template-areas: "kick kick" "key tile" "hint hint" "ans ans" "pad pad" "rev rev" "note note";
-  justify-content: center; align-items: start; padding-top: 1.1rem;
-}
-.vig .stage > .stage-kicker { grid-area: kick; justify-self: center; margin-bottom: .9rem; }
-.vig .stage > .run-banner:not(.hint-bubble) { grid-area: key; }
-.vig .stage > .tile { grid-area: tile; }
-.vig .stage > .hint-bubble { grid-area: hint; justify-self: center; }
-.vig .stage > .answer-wrap { grid-area: ans; justify-self: center; margin-top: .8rem; }
-.vig .stage > .pad { grid-area: pad; }
-.vig .stage > .reveal { grid-area: rev; text-align: center; }
-.vig .stage > .stage-hint { grid-area: note; text-align: center; }
-
-.vig .tile, .vig .run-banner:not(.hint-bubble) {
-  --tile: clamp(88px, 22vw, 104px); width: var(--tile); height: var(--tile); margin: 0;
-  border-radius: 18px; box-shadow: none; animation: none;
-}
-.vig .tile {
-  display: grid; grid-template-rows: auto 1fr; place-items: center; padding: .45rem 0 .45rem;
-  font-size: clamp(1.9rem, 6.5vw, 2.5rem); letter-spacing: 0;
-}
-.vig .tile::before {
-  content: "cipher"; font-family: var(--font-display); font-weight: 600; font-size: .6rem;
-  letter-spacing: .12em; text-transform: uppercase; color: rgba(238, 240, 255, .72);
-}
-.vig .stage-kicker.n2a ~ .tile::before { content: "plain"; }
-.vig .run-banner:not(.hint-bubble) {
-  display: grid; grid-template-rows: auto 1fr auto; place-items: center; gap: 0; padding: .45rem .3rem .45rem;
-  background: var(--gold-soft); border: 2px dashed #f2d69b;
-}
-.vig .run-banner:not(.hint-bubble) .k { font-size: .6rem; letter-spacing: .12em; color: #9a6410; }
-.vig .run-banner:not(.hint-bubble) .key { font-size: clamp(1.9rem, 6.5vw, 2.5rem); line-height: 1; color: #7a4e08; }
-.vig .run-banner:not(.hint-bubble) .hint { font-size: .6rem; font-weight: 700; letter-spacing: .06em; color: #9a6410; white-space: nowrap; }
-.vig .run-banner:not(.hint-bubble) .pos { display: none; }
-
+/* ---- vigenère ------------------------------------------------------------
+   Table off: the original stacked format, key pill above the letter tile.
+   Table on (#strip visible, which sits before the stage): key cell on the left,
+   letter cell on the right, adjacent and centred, hint and answer box under the pair.
+   The pair lives in two max-content columns flanked by 1fr gutters, so items that
+   span the row (hint, answer box, notes) never push the cells apart. */
+.vig .stage { scroll-margin-bottom: 1rem; padding-top: 1.1rem; }
+.vig .tile { --tile: clamp(100px, 26vw, 116px); font-size: clamp(2.4rem, 8vw, 3.1rem); }
+.vig .run-banner:not(.hint-bubble) .key { font-size: 1.9rem; }
 .vig .hint-bubble { margin: .8rem 0 0; padding: .3rem .7rem .3rem .8rem; border-radius: 12px; }
 .vig .hint-bubble .k { font-size: .6rem; }
 .vig .hint-bubble .hint { font-family: var(--font-mono); font-weight: 700; font-size: .95rem; letter-spacing: .02em; white-space: pre-wrap; }
-
-.vig .tile-input { width: calc(var(--tile, 104px) * 2 + .9rem); height: 54px; font-size: 1.7rem; border-radius: 14px; }
-.vig .answer-wrap { --tile: clamp(88px, 22vw, 104px); }
-.vig .stage { scroll-margin-bottom: 1rem; }
+.vig .tile-input { height: 58px; font-size: 1.8rem; border-radius: 14px; }
 .vig .vig-table { margin: .9rem 0 0; padding: 0 0 .9rem; border-top: 0; border-bottom: 1px dashed var(--line); }
 .vig .tabula { font-size: .6rem; }
 @media (max-width: 480px) { .vig .tabula { font-size: .5rem; } }
+
+.vig #strip:not([hidden]) ~ .stage {
+  display: grid; grid-template-columns: 1fr max-content max-content 1fr; column-gap: 1rem; row-gap: 0; align-items: start;
+}
+.vig #strip:not([hidden]) ~ .stage > * { grid-column: 1 / -1; justify-self: center; }
+.vig #strip:not([hidden]) ~ .stage > .stage-kicker { margin-bottom: .9rem; }
+.vig #strip:not([hidden]) ~ .stage > .run-banner:not(.hint-bubble) { grid-column: 2; justify-self: end; }
+.vig #strip:not([hidden]) ~ .stage > .tile { grid-column: 3; justify-self: start; }
+.vig #strip:not([hidden]) ~ .stage > .answer-wrap { margin-top: .8rem; }
+.vig #strip:not([hidden]) ~ .stage > .tile,
+.vig #strip:not([hidden]) ~ .stage > .run-banner:not(.hint-bubble) {
+  --tile: clamp(84px, 21vw, 96px); width: var(--tile); height: var(--tile); margin: 0;
+  border-radius: 18px; box-shadow: none; animation: none;
+}
+.vig #strip:not([hidden]) ~ .stage > .tile {
+  display: grid; grid-template-rows: auto 1fr; place-items: center; padding: .4rem 0;
+  font-size: clamp(1.8rem, 6vw, 2.3rem); letter-spacing: 0;
+}
+.vig #strip:not([hidden]) ~ .stage > .tile::before {
+  content: "cipher"; font-family: var(--font-display); font-weight: 600; font-size: .58rem;
+  letter-spacing: .12em; text-transform: uppercase; color: rgba(238, 240, 255, .72);
+}
+.vig #strip:not([hidden]) ~ .stage > .stage-kicker.n2a ~ .tile::before { content: "plain"; }
+.vig #strip:not([hidden]) ~ .stage > .run-banner:not(.hint-bubble) {
+  display: grid; grid-template-rows: auto 1fr auto; place-items: center; gap: 0; padding: .4rem .3rem;
+  background: var(--gold-soft); border: 2px dashed #f2d69b;
+}
+.vig #strip:not([hidden]) ~ .stage > .run-banner:not(.hint-bubble) .k { font-size: .58rem; letter-spacing: .12em; color: #9a6410; }
+.vig #strip:not([hidden]) ~ .stage > .run-banner:not(.hint-bubble) .key { font-size: clamp(1.8rem, 6vw, 2.3rem); line-height: 1; color: #7a4e08; }
+.vig #strip:not([hidden]) ~ .stage > .run-banner:not(.hint-bubble) .hint { font-size: .58rem; font-weight: 700; letter-spacing: .06em; color: #9a6410; white-space: nowrap; }
+.vig #strip:not([hidden]) ~ .stage > .run-banner:not(.hint-bubble) .pos { display: none; }
+.vig #strip:not([hidden]) ~ .stage > .answer-wrap .tile-input { width: calc(clamp(84px, 21vw, 96px) * 2 + 1rem); height: 54px; font-size: 1.7rem; }
