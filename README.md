@@ -15,10 +15,12 @@ event (Codebusters first). Static site, no build step, hosted on Vercel.
   (5 by default); encrypt or decrypt each letter. Weak spots are reported per key.
 - **atbash** (`/atbash/`): mirror the alphabet (A ↔ Z, B ↔ Y …). One direction, the timer
   is the only setting.
+- **porta** (`/porta/`): decrypt a letter given the key on the 13-row Porta table (its own
+  inverse). Math help levels, keyword mode, and the table toggle, like the Vigenère drill.
 - **anagram** (`/anagram/`): unscramble common English words; each set asks for every
   anagram of its letters. One word length (3–12) or any length from 4 to 12.
 
-The hub lists those under **Division B & C**. Under **Division A ciphers** (DaVinci Decoder):
+The hub lists those under **Division B & C ciphers**. Under **Division A ciphers** (DaVinci Decoder):
 
 - **pigpen** (`/pigpen/`): the standard Pigpen (Masonic) table. Read a symbol and type its
   letter, or tap the symbol for a letter.
@@ -85,7 +87,7 @@ with Node's built-in test runner.
 ```
 index.html                 Hub: hero + applet groups (rendered from the registry)
 404.html                   Themed not-found page (Vercel picks it up automatically)
-alpha2num/ … anagram/ pigpen/ tapcode/ templar/ sga/ vigenere/
+alpha2num/ … anagram/ porta/ pigpen/ tapcode/ templar/ sga/ vigenere/
   index.html               The applet page (settings → play → results)
   spec.js                  What this drill converts: directions, cards, extras (pure, tested)
   app.js                   Two lines: createDrill(spec)

@@ -156,7 +156,7 @@ Directions: **Symbol → letter** (type; what the test asks) and **Letter → sy
 palette; keyboard ignored, `inputmode="none"`). Extras: **All letters** or **12 most common**
 (E T A O I N S R H L D C, the resource-sheet order), table toggle. Knights Templar has 25
 symbols with I/J shared (either letter accepted; J's symbol is I's); N is the centre X. The
-hub groups applets by event division: **Division B & C** (alpha2num … anagram) and
+hub groups applets by event division: **Division B & C ciphers** (alpha2num … anagram, porta) and
 **Division A ciphers** (pigpen, tapcode, templar, sga, vigenere).
 
 ## pigpen and tapcode (built) — more Division A
@@ -186,6 +186,18 @@ hooks added for this (all additive): `spec.renderStrip(s)` (a spec draws its own
 HTML), `dir.hintFor(card, run)` rendered into an optional `#hint` bubble, `spec.scrollOnStart(s)`
 to choose where a round lands, and the key banner omits "n of n" for length-1 runs.
 The coach's Division A list is now complete: pigpen, tapcode, templar, sga, vigenere.
+
+## porta (built) — Division B & C, same shell as vigenere
+
+Porta is reciprocal: the key letter picks row `floor(index/2)` (A,B → 0 … Y,Z → 12); a letter in
+A–M at position i becomes the N–Z letter at (i + row) mod 13, a letter in N–Z at position j
+becomes the A–M letter at (j − row) mod 13. That is the toebes generator's mapping and the
+resource-sheet table, asserted in tests. Decrypt and encrypt are the same move (both
+directions offered for framing; decrypt on by default). Key banner shows the key and its row
+pair ("row E·F"); hint bubble levels: "Show numbers" (`R = N+4 · key E → row 2 (E,F)`), "Show
+the math" (`R 4 − row 2 = ?` with a count-in-which-half reminder). Keyword mode and the
+13-row table toggle (above the letter, side-by-side cells) work exactly as in vigenere; the
+keyword list is shared in `assets/js/keywords.js`.
 
 ## Quality bar before shipping a change
 

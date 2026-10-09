@@ -19,7 +19,7 @@ export const APPLETS = [
   {
     slug: "alpha2num",
     title: "alpha2num",
-    group: "Division B & C",
+    group: "Division B & C ciphers",
     href: "/alpha2num/",
     glyph: "A0",
     badge: "Speed drill",
@@ -30,7 +30,7 @@ export const APPLETS = [
   {
     slug: "baconian",
     title: "baconian",
-    group: "Division B & C",
+    group: "Division B & C ciphers",
     href: "/baconian/",
     glyph: "AB",
     badge: "Speed drill",
@@ -41,7 +41,7 @@ export const APPLETS = [
   {
     slug: "morse",
     title: "morse",
-    group: "Division B & C",
+    group: "Division B & C ciphers",
     href: "/morse/",
     glyph: "•–",
     badge: "Speed drill",
@@ -52,7 +52,7 @@ export const APPLETS = [
   {
     slug: "caesar",
     title: "caesar",
-    group: "Division B & C",
+    group: "Division B & C ciphers",
     href: "/caesar/",
     glyph: "+3",
     badge: "Speed drill",
@@ -63,7 +63,7 @@ export const APPLETS = [
   {
     slug: "atbash",
     title: "atbash",
-    group: "Division B & C",
+    group: "Division B & C ciphers",
     href: "/atbash/",
     glyph: "A↔Z",
     badge: "Speed drill",
@@ -74,13 +74,24 @@ export const APPLETS = [
   {
     slug: "anagram",
     title: "anagram",
-    group: "Division B & C",
+    group: "Division B & C ciphers",
     href: "/anagram/",
     glyph: "A⇄",
     badge: "Speed drill",
     badgeTone: "teal",
     desc: "Unscramble common English words. Every set asks for all of its anagrams: if the letters make three words, find all three. Pick a word length or mix 4 to 12.",
     tags: ["Timed", "One length or any", "All the anagrams", "Weak-spot report"],
+  },
+  {
+    slug: "porta",
+    title: "porta",
+    group: "Division B & C ciphers",
+    href: "/porta/",
+    glyph: "A⇄N",
+    badge: "Math",
+    badgeTone: "gold",
+    desc: "Porta, decryption given the key: the key letter picks one of 13 rows and A–M swaps with N–Z along it. The same math help levels, keyword mode, and table toggle as the Vigenère drill.",
+    tags: ["Timed", "Self-inverse", "Math help levels", "Keyword mode", "Table on demand"],
   },
   {
     slug: "pigpen",

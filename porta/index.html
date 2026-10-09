@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>porta · sciolyutils</title>
+  <meta name="description" content="Speed drill for the Porta cipher (Science Olympiad Codebusters, Division B and C): decrypt a letter given the key, with optional help that shows the row and the half-alphabet arithmetic. Table on demand.">
+  <meta name="theme-color" content="#3b53d9">
+  <meta name="author" content="Arthur Armaing">
+  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Lato:wght@400;700&family=Space+Mono:wght@400;700&display=swap">
+  <link rel="stylesheet" href="/assets/css/base.css">
+  <link rel="stylesheet" href="/assets/css/trainer.css">
+  <link rel="stylesheet" href="/assets/css/glyphs.css">
+  <script type="module" src="/assets/js/site.js"></script>
+  <script type="module" src="/porta/app.js"></script>
+</head>
+<body>
+  <main id="main">
+    <header class="page-head">
+      <div class="wrap">
+        <p class="crumbs"><a href="/">Home</a> / porta</p>
+        <h1 class="mono">porta</h1>
+        <p class="lead">Porta from the Division B and C rules: decrypt a letter when you are told the key. The key letter picks a row (A and B share one, C and D the next, and so on) and along that row A–M swap with N–Z. Key <b>E</b>, cipher <b>R</b>: R is 4 into N–Z, row E,F is 2, 4 − 2 = 2, which is <b>C</b>. Porta is its own inverse, so the same table encrypts and decrypts.</p>
+        <a class="back" href="/">← All applets</a>
+      </div>
+    </header>
+
+    <section class="section-tight">
+      <div class="wrap" style="max-width: 860px;">
+        <div class="trainer vig" id="trainer">
+
+          <!-- ================= SETUP ================= -->
+          <form id="setup" class="trainer-view" novalidate>
+            <div class="setup-grid">
+              <fieldset class="opt">
+                <legend>Directions</legend>
+                <label class="switch">
+                  <input type="checkbox" id="opt-dirA" name="dirA" checked>
+                  <span class="track" aria-hidden="true"><span class="thumb"></span></span>
+                  <span class="text"><b>Decrypt · cipher → plain</b><small>Key <span class="ex">E</span>, see <span class="ex">R</span>, type <span class="ex">C</span>. This is what the test asks.</small></span>
+                </label>
+                <label class="switch">
+                  <input type="checkbox" id="opt-dirB" name="dirB">
+                  <span class="track" aria-hidden="true"><span class="thumb"></span></span>
+                  <span class="text"><b>Encrypt · plain → cipher</b><small>Key <span class="ex">E</span>, see <span class="ex">C</span>, type <span class="ex">R</span>. Same table, same move.</small></span>
+                </label>
+                <p class="opt-help" id="dir-help" aria-live="polite">Turn on one or both. With both on, prompts alternate at random.</p>
+              </fieldset>
+
+              <fieldset class="opt">
+                <legend>Key</legend>
+                <div class="pills">
+                  <label class="pill"><input type="radio" name="key" value="letter" checked><span>New letter every time</span></label>
+                  <label class="pill"><input type="radio" name="key" value="word"><span>Keyword that cycles</span></label>
+                </div>
+                <p class="opt-help">A keyword like <span class="mono">LEMON</span> runs along ten letters, the way it does on a real message, so you also practise keeping your place in the key.</p>
+              </fieldset>
+
+              <fieldset class="opt">
+                <legend>Learning the math</legend>
+                <div class="pills">
+                  <label class="pill"><input type="radio" name="help" value="none" checked><span>No help</span></label>
+                  <label class="pill"><input type="radio" name="help" value="numbers"><span>Show numbers</span></label>
+                  <label class="pill"><input type="radio" name="help" value="steps"><span>Show the math</span></label>
+                </div>
+                <p class="opt-help">Numbers shows which half the letter is in and how far in (R = N+4), plus which row the key picks. Show the math writes the equation with a ?: add the row if the letter is in A–M and count the answer in N–Z, subtract it if the letter is in N–Z and count in A–M. Work your way to no help.</p>
+              </fieldset>
+
+              <fieldset class="opt">
+                <legend>Duration</legend>
+                <div class="duration-row">
+                  <button type="button" class="chip" data-field="seconds" data-value="30" aria-pressed="false">30s</button>
+                  <button type="button" class="chip" data-field="seconds" data-value="60" aria-pressed="true">60s</button>
+                  <button type="button" class="chip" data-field="seconds" data-value="90" aria-pressed="false">90s</button>
+                  <button type="button" class="chip" data-field="seconds" data-value="120" aria-pressed="false">120s</button>
+                  <label class="num-field">
+                    <span class="visually-hidden">Custom duration in seconds</span>
+                    <input type="number" id="opt-seconds" name="seconds" min="5" max="3600" step="1" value="60" inputmode="numeric">
+                    <span aria-hidden="true">seconds</span>
+                  </label>
+                </div>
+              </fieldset>
+
+              <fieldset class="opt">
+                <legend>Extras</legend>
+                <label class="switch">
+                  <input type="checkbox" id="opt-strip" name="strip">
+                  <span class="track" aria-hidden="true"><span class="thumb"></span></span>
+                  <span class="text"><b>Show the Porta table</b><small>The 13-row table from the resource sheet, key pairs down the side, exactly as on the test.</small></span>
+                </label>
+                <p class="opt-help">After three misses on one prompt the answer is revealed; it does not score.</p>
+              </fieldset>
+            </div>
+
+            <div class="start-row">
+              <button type="submit" class="btn btn-primary btn-lg" id="start">Start</button>
+              <p class="meta"><span id="pb-line">…</span><br><kbd>Enter</kbd> starts · <kbd>Esc</kbd> ends a round early</p>
+            </div>
+          </form>
+
+          <!-- ================= PLAY ================= -->
+          <div id="play" class="trainer-view" hidden>
+            <div class="hud">
+              <div class="stat" id="time-stat"><span class="k">Seconds left</span><span class="v" id="time" role="timer" aria-live="off">60</span></div>
+              <div class="stat"><span class="k">Score</span><span class="v" id="score">0</span></div>
+              <button type="button" class="btn btn-ghost btn-sm end" id="end">End round</button>
+            </div>
+            <div class="progress" id="progress" aria-hidden="true"><span id="progress-bar"></span></div>
+
+            <div class="ref-strip vig-table" id="strip" hidden aria-label="Porta table"></div>
+
+            <div class="stage" id="stage">
+              <span class="stage-kicker" id="kicker">Decrypt · cipher → plain</span>
+              <div class="run-banner" id="context" hidden></div>
+              <div class="tile" id="tile" aria-live="polite" aria-atomic="true">
+                <span id="tile-text" aria-hidden="true">R</span>
+                <span class="visually-hidden" id="tile-sr"></span>
+              </div>
+              <div class="run-banner hint-bubble" id="hint" hidden aria-live="polite"></div>
+              <div class="answer-wrap">
+                <input class="tile-input" id="answer" type="text" maxlength="1" aria-label="Your answer"
+                       autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" enterkeyhint="done">
+              </div>
+              <div class="pad" id="pad" hidden></div>
+              <p class="reveal" id="reveal" aria-live="polite"></p>
+              <p class="stage-hint">Right answers advance on their own. Wrong ones clear so you can try again.</p>
+            </div>
+          </div>
+
+          <!-- ================= DONE ================= -->
+          <div id="done" class="trainer-view" hidden>
+            <div class="result-hero">
+              <span class="eyebrow" id="done-eyebrow">Time!</span>
+              <h2 class="visually-hidden" id="done-heading" tabindex="-1">Round over</h2>
+              <div class="big" id="done-score">0</div>
+              <p class="sub" id="done-sub"></p>
+              <p class="pb" id="done-pb"></p>
+            </div>
+            <div class="stat-grid" id="done-stats"></div>
+            <div class="trouble" id="trouble"></div>
+            <div class="done-actions">
+              <button type="button" class="btn btn-primary" id="again">Play again</button>
+              <button type="button" class="btn btn-ghost" id="settings">Change settings</button>
+              <span class="spacer"></span>
+              <button type="button" class="btn btn-ghost btn-sm" id="copy">Copy summary</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="notes">
+          <div class="card">
+            <h3>The math</h3>
+            <ul>
+              <li>The key letter picks a row: A,B is row 0, C,D row 1 … Y,Z row 12. So E is row 2.</li>
+              <li>Letter in A–M? Count its position (A = 0), add the row, count that far into N–Z. C 2 + row 2 = 4, four into N–Z is R.</li>
+              <li>Letter in N–Z? Count its position (N = 0), subtract the row, count that far into A–M. Under 0, add 13.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>The table way</h3>
+            <ul>
+              <li>Find the row whose pair contains your key letter.</li>
+              <li>If your letter is in the top line A–M, read straight down into that row.</li>
+              <li>If it is in the row, read straight up to the top. Either way you land on the answer.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>For coaches</h3>
+            <p>Division B and C Codebusters: Porta decryption given the key. Suggested ladder: <code>/porta/?help=steps</code>, then <code>?help=numbers</code>, then <code>?help=none&amp;key=word</code>. Weak spots are reported per key row.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
