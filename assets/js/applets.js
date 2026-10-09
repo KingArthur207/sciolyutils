@@ -15,6 +15,14 @@ export const SITE = {
   year: 2026,
 };
 
+/* Short labels for the header dropdowns, keyed by group name. A group without an entry
+   shows its full name. The header itself is built from APPLETS, so a new applet (or a new
+   group) appears in the menu without touching anything else. */
+export const NAV_LABELS = {
+  "Division B & C ciphers": "Div B & C",
+  "Division A ciphers": "Div A",
+};
+
 export const APPLETS = [
   {
     slug: "alpha2num",

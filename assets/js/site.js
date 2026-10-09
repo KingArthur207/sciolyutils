@@ -3,7 +3,7 @@
    footer on every page from assets/js/applets.js.
    Loaded as: <script type="module" src="/assets/js/site.js"></script>
    ========================================================================= */
-import { SITE, APPLETS, FOOTER_LINKS } from "/assets/js/applets.js";
+import { SITE, APPLETS, FOOTER_LINKS, NAV_LABELS } from "/assets/js/applets.js";
 
 /* ---- path helpers ---- */
 const norm = (p) => {
@@ -24,8 +24,31 @@ const brandHTML = () => `
     <span class="brand-text"><b>${esc(SITE.name)}</b></span>
   </a>`;
 
-const navLink = (label, href) =>
-  `<li class="nav-item"><a class="nav-link" href="${esc(href)}"${isCurrent(href) ? ' aria-current="page"' : ""}>${esc(label)}</a></li>`;
+/* ---- groups, in registry order ---- */
+const groupId = (name) => "group-" + name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+function appletGroups() {
+  const groups = [];
+  for (const a of APPLETS) {
+    const name = a.group || "Applets";
+    let g = groups.find((x) => x.name === name);
+    if (!g) groups.push((g = { name, id: groupId(name), label: NAV_LABELS[name] || name, items: [] }));
+    g.items.push(a);
+  }
+  return groups;
+}
+
+/* one dropdown per group: a button that opens a list of that group's applets */
+function navGroupHTML(g) {
+  const current = g.items.some((a) => isCurrent(a.href));
+  return `<li class="nav-item has-menu${current ? " is-current" : ""}">
+    <button type="button" class="nav-link nav-group" aria-haspopup="true" aria-expanded="false" aria-controls="menu-${g.id}">${esc(g.label)}<i class="caret" aria-hidden="true"></i></button>
+    <ul class="nav-menu" id="menu-${g.id}" aria-label="${esc(g.name)}">
+      <li class="group-label" aria-hidden="true">${esc(g.name)}</li>
+      ${g.items.map((a) => `<li><a href="${esc(a.href)}"${isCurrent(a.href) ? ' aria-current="page"' : ""}>${esc(a.title)}</a></li>`).join("")}
+      <li class="menu-all"><a href="/#${g.id}">All ${esc(g.label)} applets →</a></li>
+    </ul>
+  </li>`;
+}
 
 function renderHeader() {
   const skip = document.createElement("a");
@@ -40,8 +63,7 @@ function renderHeader() {
       ${brandHTML()}
       <button class="nav-toggle" aria-label="Menu" aria-expanded="false" aria-controls="nav-links"><span></span></button>
       <ul class="nav-links" id="nav-links">
-        ${navLink("Home", "/")}
-        ${APPLETS.map((a) => navLink(a.title, a.href)).join("")}
+        ${appletGroups().map(navGroupHTML).join("")}
       </ul>
     </div>`;
 
@@ -50,13 +72,31 @@ function renderHeader() {
 
   const toggle = header.querySelector(".nav-toggle");
   const links = header.querySelector(".nav-links");
-  const close = () => { links.classList.remove("open"); toggle.setAttribute("aria-expanded", "false"); };
+  const items = [...header.querySelectorAll(".nav-item.has-menu")];
+  const setExpanded = (item, v) => item.querySelector(".nav-group").setAttribute("aria-expanded", v ? "true" : "false");
+  const closeMenus = () => items.forEach((i) => { i.classList.remove("open"); setExpanded(i, false); });
+  const closeAll = () => { closeMenus(); links.classList.remove("open"); toggle.setAttribute("aria-expanded", "false"); };
+
   toggle.addEventListener("click", () => {
     const open = links.classList.toggle("open");
     toggle.setAttribute("aria-expanded", open ? "true" : "false");
   });
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
-  document.addEventListener("click", (e) => { if (!header.contains(e.target)) close(); });
+  // dropdowns: hover and keyboard focus open them (CSS); a click toggles them for touch screens
+  items.forEach((item) => {
+    const btn = item.querySelector(".nav-group");
+    btn.addEventListener("click", () => {
+      const open = !item.classList.contains("open");
+      closeMenus();
+      item.classList.toggle("open", open);
+      setExpanded(item, open);
+    });
+    item.addEventListener("mouseenter", () => setExpanded(item, true));
+    item.addEventListener("mouseleave", () => { if (!item.classList.contains("open")) setExpanded(item, false); });
+    item.addEventListener("focusin", () => setExpanded(item, true));
+    item.addEventListener("focusout", (e) => { if (!item.contains(e.relatedTarget) && !item.classList.contains("open")) setExpanded(item, false); });
+  });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAll(); });
+  document.addEventListener("click", (e) => { if (!header.contains(e.target)) closeAll(); });
 }
 
 function renderFooter() {
@@ -111,15 +151,9 @@ const soonCardHTML = () => `
 function renderAppletGroups() {
   const mount = document.querySelector("[data-applet-groups]");
   if (!mount) return;
-  const groups = [];
-  for (const a of APPLETS) {
-    const name = a.group || "Applets";
-    let g = groups.find((x) => x.name === name);
-    if (!g) groups.push((g = { name, items: [] }));
-    g.items.push(a);
-  }
+  const groups = appletGroups();
   mount.innerHTML = groups.map((g, i) => {
-    const id = "group-" + g.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    const id = g.id;
     const last = i === groups.length - 1;
     return `
     <section class="applet-group" aria-labelledby="${id}">

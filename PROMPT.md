@@ -45,6 +45,15 @@ Tokens live in `assets/css/base.css`; never hard-code colours in a page.
 - The signature motif is the **cipher cell**: dark tile for the given, white bordered tile
   for the answer, teal when solved. Reuse it (`trainer.css`) rather than inventing new UI.
 
+## Header
+
+The header lists **only the groups**, as dropdowns ("Div B & C", "Div A" via `NAV_LABELS` in
+the registry; unknown groups use their full name). Each dropdown lists the group's applets
+and an "All … applets" link to the hub section. Hover, focus and click open a dropdown; Escape
+or a click outside closes it. Below 720px the menu button opens a panel with every group
+expanded. All of it is built from `APPLETS` by `site.js`, so adding an applet or a group never
+touches the header.
+
 ## Applet conventions
 
 Each applet = `/<slug>/index.html` + `spec.js` (directions, cards, extras; pure) + a

@@ -112,6 +112,13 @@ PROMPT.md                  The build brief: goals, theme rules, conventions, app
 vercel.json                Vercel config (static, trailing slashes, asset caching)
 ```
 
+## Header and hub
+
+Both are generated from `assets/js/applets.js`. The header shows one dropdown per applet
+`group`, labelled by `NAV_LABELS` ("Div B & C", "Div A"; a new group falls back to its full
+name), listing that group's applets plus a link to its section on the hub. On phones the menu
+button opens a panel with the same groups expanded. Nothing in the header is hand-edited.
+
 ## Add an applet
 
 1. Copy an applet folder (`baconian/` is a good template). Edit the copy in `index.html`
@@ -119,9 +126,9 @@ vercel.json                Vercel config (static, trailing slashes, asset cachin
 2. Write `spec.js`: two directions with their cards (`{ key, shown, answer, accept?,
    answerLabel? }`), a `normalize` per direction, and any extra settings. `app.js` stays
    two lines. See the header comment in `assets/js/drill.js` for the full spec shape.
-3. Register it in `assets/js/applets.js` with a `group` (e.g. `"Codebusters Training"`;
-   a new event just needs a new group name). That adds it to the hub, the header nav
-   and the footer.
+3. Register it in `assets/js/applets.js` with a `group` (e.g. `"Division B & C ciphers"`;
+   a new event just needs a new group name, plus a short label in `NAV_LABELS` if you want
+   one). That adds it to the hub, the header dropdowns and the footer.
 4. Add a test file in `tests/` and run `npm test`.
 
 See `PROMPT.md` for the full conventions and the quality bar (mobile, keyboard,
