@@ -157,8 +157,7 @@ palette; keyboard ignored, `inputmode="none"`). Extras: **All letters** or **12 
 (E T A O I N S R H L D C, the resource-sheet order), table toggle. Knights Templar has 25
 symbols with I/J shared (either letter accepted; J's symbol is I's); N is the centre X. The
 hub groups applets by event division: **Division B & C** (alpha2num … anagram) and
-**Division A ciphers** (pigpen, tapcode, templar, sga). Still open from the same coach
-request: Vigenère (the maths).
+**Division A ciphers** (pigpen, tapcode, templar, sga, vigenere).
 
 ## pigpen and tapcode (built) — more Division A
 
@@ -170,6 +169,23 @@ dot groups `●● ●●●` (row, pause, column) or optionally numbers `2 · 3
 K both accepted for `● ●●●`. Write direction: see a letter, enter row then column (digits 1–5,
 a 1–5 pad for phones); the box echoes dots. The tap map is asserted against the toebes
 generator's table in tests. Table toggle renders a real 5 × 5 grid.
+
+## vigenere (built) — the Division A math one
+
+Decrypt given the key (test framing), encrypt optional (off by default via `defaults.dirB`).
+The key sits in the gold run banner above the letter tile. **Key mode**: a fresh random letter
+every prompt (run length 1, 26-key deck) or a **five-letter keyword** from a built-in list that
+cycles over ten prompts (banner names the keyword and the letter position). **Learning the
+math** levels, shown in a second gold *hint bubble under the letter*, never in the key banner:
+"No help" (default), "Show numbers" (`R = 17 · E = 4`), "Show the math" (`B 1 − E 4 = ?` plus a
+wrap reminder; the result is never given). The letter tile is smaller and the key larger than
+in other drills. The **Vigenère table** toggle draws the full tabula recta *above* the letter,
+as on the resource sheet, no highlights, scrollable on phones; with it on, starting a round
+lands on the letter so the table shows above it. Weak spots group by key letter. Controller
+hooks added for this (all additive): `spec.renderStrip(s)` (a spec draws its own reference
+HTML), `dir.hintFor(card, run)` rendered into an optional `#hint` bubble, `spec.scrollOnStart(s)`
+to choose where a round lands, and the key banner omits "n of n" for length-1 runs.
+The coach's Division A list is now complete: pigpen, tapcode, templar, sga, vigenere.
 
 ## Quality bar before shipping a change
 

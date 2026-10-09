@@ -86,7 +86,7 @@ export function createDrill(spec) {
     dirHelp: $("#dir-help"), chips: $$(".chip[data-field]"), pbLine: $("#pb-line"), start: $("#start"),
     time: $("#time"), timeStat: $("#time-stat"), score: $("#score"), end: $("#end"),
     progress: $("#progress"), progressBar: $("#progress-bar"),
-    stage: $("#stage"), kicker: $("#kicker"), context: $("#context"), tile: $("#tile"), tileText: $("#tile-text"), tileSr: $("#tile-sr"),
+    stage: $("#stage"), kicker: $("#kicker"), context: $("#context"), hintBox: $("#hint"), tile: $("#tile"), tileText: $("#tile-text"), tileSr: $("#tile-sr"),
     answer: $("#answer"), pad: $("#pad"), reveal: $("#reveal"), strip: $("#strip"),
     doneEyebrow: $("#done-eyebrow"), doneHeading: $("#done-heading"), doneScore: $("#done-score"), doneSub: $("#done-sub"),
     donePb: $("#done-pb"), doneStats: $("#done-stats"), trouble: $("#trouble"),
@@ -177,6 +177,11 @@ export function createDrill(spec) {
 
   function renderStrip(s) {
     if (!el.strip) return;
+    if (spec.renderStrip) {                       // a spec may draw its own reference (e.g. a 26×26 table)
+      el.strip.innerHTML = spec.renderStrip(s);
+      el.strip.hidden = false;
+      return;
+    }
     const cols = spec.strip ? spec.strip(s) : null;
     if (!cols) { el.strip.hidden = true; return; }
     el.strip.innerHTML = cols.map((c) =>
@@ -202,17 +207,26 @@ export function createDrill(spec) {
     const dots = run.length <= 10
       ? `<span class="dots" aria-hidden="true">${Array.from({ length: run.length }, (_, i) => `<i${i < run.position ? ' class="on"' : ""}></i>`).join("")}</span>`
       : "";
+    const hint = dir.run.hint ? dir.run.hint(run.context) : "";
     el.context.innerHTML = `
       <span class="k">Key</span><b class="key">${esc(dir.run.label(run.context))}</b>
-      ${dir.run.hint ? `<span class="hint">${esc(dir.run.hint(run.context))}</span>` : ""}
-      <span class="pos">${dots}<span>${run.position} of ${run.length}</span></span>`;
+      ${hint ? `<span class="hint">${esc(hint)}</span>` : ""}
+      ${run.length > 1 ? `<span class="pos">${dots}<span>${run.position} of ${run.length}</span></span>` : ""}`;
     el.context.hidden = false;
     el.context.classList.toggle("is-new", run.position === 1);
+  }
+
+  function renderHint(dir, card, run) {
+    if (!el.hintBox) return;
+    const text = dir.hintFor ? dir.hintFor(card, run) : "";
+    el.hintBox.hidden = !text;
+    el.hintBox.innerHTML = text ? `<span class="k">Hint</span><span class="hint">${esc(text)}</span>` : "";
   }
 
   function showPrompt() {
     const { dir, card, run } = state.round.next(performance.now());
     renderRun(dir, run);
+    renderHint(dir, card, run);
     el.kicker.textContent = dir.label;
     el.kicker.className = `stage-kicker ${dir.tone === "teal" ? "n2a" : ""}`;
     el.tileText.textContent = card.shown;
@@ -296,13 +310,16 @@ export function createDrill(spec) {
     const modes = new Set(dirs.map((d) => d.inputmode || "text"));
     el.answer.setAttribute("inputmode", modes.size === 1 ? [...modes][0] : "text");
     el.answer.setAttribute("maxlength", String(Math.max(...dirs.map((d) => d.maxlength || 2))));
-    if (s.strip && spec.strip) renderStrip(s); else if (el.strip) el.strip.hidden = true;
+    if (s.strip && (spec.strip || spec.renderStrip)) renderStrip(s); else if (el.strip) el.strip.hidden = true;
 
     setView("play");
     showPrompt();
     timer.start(s.seconds);
     el.answer.focus({ preventScroll: true });
-    el.trainer.scrollIntoView({ behavior: "smooth", block: "start" });
+    // a spec may ask to land somewhere else (e.g. on the stage, with a reference table above it)
+    const where = spec.scrollOnStart ? spec.scrollOnStart(s) : null;
+    const target = (where && el.trainer.querySelector(where.selector)) || el.trainer;
+    target.scrollIntoView({ behavior: "smooth", block: (where && where.block) || "start" });
   }
 
   /* ---- results view ---- */

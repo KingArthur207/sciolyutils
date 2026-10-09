@@ -27,6 +27,10 @@ The hub lists those under **Division B & C**. Under **Division A ciphers** (DaVi
   enter the row and column for a letter.
 - **templar** (`/templar/`): the Knights Templar cipher symbols. I and J share a symbol.
 - **sga** (`/sga/`): the Standard Galactic Alphabet.
+- **vigenere** (`/vigenere/`): decrypt a letter given the key (encrypt optional). Math help
+  levels show the letter numbers or the open equation in a hint under the letter; the key is a
+  fresh letter each prompt or a five-letter keyword that cycles; the full Vigenère table is a
+  toggle shown above the letter.
 
 Templar and SGA render their symbols with the cipher fonts from the open-source
 [toebes/ciphers](https://github.com/toebes/ciphers) Codebusters tools (BSD-3, see
@@ -81,7 +85,7 @@ with Node's built-in test runner.
 ```
 index.html                 Hub: hero + applet groups (rendered from the registry)
 404.html                   Themed not-found page (Vercel picks it up automatically)
-alpha2num/ … anagram/ pigpen/ tapcode/ templar/ sga/
+alpha2num/ … anagram/ pigpen/ tapcode/ templar/ sga/ vigenere/
   index.html               The applet page (settings → play → results)
   spec.js                  What this drill converts: directions, cards, extras (pure, tested)
   app.js                   Two lines: createDrill(spec)

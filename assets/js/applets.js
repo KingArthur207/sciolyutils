@@ -126,6 +126,17 @@ export const APPLETS = [
     desc: "The Standard Galactic Alphabet from the Division A resource sheet. Read a symbol and type its letter, or tap the symbol for a letter, until the table is in your head.",
     tags: ["Timed", "Read & write", "12 most common letters", "Table on demand"],
   },
+  {
+    slug: "vigenere",
+    title: "vigenere",
+    group: "Division A ciphers",
+    href: "/vigenere/",
+    glyph: "C−K",
+    badge: "Math",
+    badgeTone: "gold",
+    desc: "Vigenère, decryption given the key. Plain letters and the table by default; turn on the letter numbers or the open equation while the math sinks in, then turn them off again.",
+    tags: ["Timed", "Decrypt & encrypt", "Math help levels", "Keyword mode", "Table on demand"],
+  },
 ];
 
 export const FOOTER_LINKS = [
